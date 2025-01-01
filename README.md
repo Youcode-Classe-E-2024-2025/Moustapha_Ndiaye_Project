@@ -9,6 +9,7 @@ Links
     [GitHub Repository](https://github.com/Youcode-Classe-E-2024-2025/Moustapha_Ndiaye_Project.git)
     [ Scrum Board ](https://trello.com/b/dhgLFMRu/gestionnaire-de-projets-oop)
     [Diagramme de cas d'utilisation](https://lucid.app/lucidchart/b8a22d65-5667-4257-ad89-c5659d6d122b/edit?viewport_loc=-351%2C-127%2C1707%2C968%2C0_0&invitationId=inv_1d219001-1e0a-4271-85d1-a005fe1f5d30)
+    [Diagramme de classe](https://lucid.app/lucidchart/b8a22d65-5667-4257-ad89-c5659d6d122b/edit?viewport_loc=-351%2C-127%2C1707%2C968%2C0_0&invitationId=inv_1d219001-1e0a-4271-85d1-a005fe1f5d30)
 ​
 
 Technologies Requises
