@@ -22,7 +22,6 @@ class LoadDatabase {
 
         try {
             $this->pdo->exec($sql);
-            echo "Database setup completed successfully.\n";
         } catch (PDOException $e) {
             throw new Exception("Database setup failed: " . $e->getMessage());
         }

@@ -1,5 +1,5 @@
 -- Table Users
-CREATE TABLE Users (
+CREATE TABLE User (
     userId INT PRIMARY KEY AUTO_INCREMENT,
     fullName VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
