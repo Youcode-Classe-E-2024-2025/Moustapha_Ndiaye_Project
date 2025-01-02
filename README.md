@@ -47,6 +47,9 @@ Prérequis
     Executez tailwincss  :
         npm run dev
 
+    Dependances
+        composer install
+
     Exécuter le projet :
         http://localhost:8000
 

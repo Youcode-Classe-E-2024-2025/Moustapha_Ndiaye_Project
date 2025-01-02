@@ -37,9 +37,3 @@ class database {
     }
 }   
 
-// // user case 
-// $db = new database ;
-// //open connexion
-// $conn = $db->connexion();
-// // close connexion
-// $conn = $db->closeConnexion() ;
