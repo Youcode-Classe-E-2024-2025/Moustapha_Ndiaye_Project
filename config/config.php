@@ -3,11 +3,18 @@
 // data base connexion 
 
 class database {
-    private $host = "localhost";
-    private $dbName = "projectManagePOO";
-    private $user = "root";
-    private $passWord = "";
+    private $host ;
+    private $dbName ;
+    private $user  ;
+    private $passWord;    
     private $connexion = null;
+
+    public function __construct(){
+        $this->host = $_ENV['DB_HOST'] ;
+        $this->dbName = $_ENV['DB_NAME'] ;
+        $this->user = $_ENV['DB_USER'];
+        $this->passWord = $_ENV['DB_PASSWORD'];
+    }
 
     public function connexion() {
         try {
@@ -19,7 +26,7 @@ class database {
             $this->connexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->connexion->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            echo "Échec de la connexion : " . $e->getMessage() . "\n";
+            echo "Connexion failed : " . $e->getMessage() . "\n";
         }
 
         return $this->connexion;
