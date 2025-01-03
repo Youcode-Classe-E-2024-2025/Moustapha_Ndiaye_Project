@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+.label-top {
+    transform: translateY(-1.15rem) scale(0.8);
+    color: #000; /* Couleur lorsque le label est en haut */
+  }
+
+  .label-default {
+    transform: translateY(0) scale(1);
+    color: #6b7280; /* Couleur par défaut du label */
+  }
+
+  label {
+    transition: all 0.2s ease;
+  }
+

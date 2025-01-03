@@ -4,7 +4,7 @@ CREATE TABLE User (
     fullName VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     passWord VARCHAR(255) NOT NULL,
-    role ENUM('Visitor', 'TeamMember', 'ProjectManager') NOT NULL
+    role ENUM('Visitor', 'TeamMember', 'ProjectManager') NOT NULL DEFAULT 'Visitor'
 );
 
 -- Table Project
