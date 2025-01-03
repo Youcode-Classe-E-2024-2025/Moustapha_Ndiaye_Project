@@ -15,7 +15,8 @@ CREATE TABLE Project (
     category VARCHAR(50),
     startAt DATE NOT NULL,
     endAt DATE,
-    createdBy INT, -- Référence à l'utilisateur qui a créé le projet
+    createdBy INT, 
+    isPublic TINYINT(1) NOT NULL DEFAULT 1, 
     FOREIGN KEY (createdBy) REFERENCES Users(id_users) ON DELETE SET NULL
 );
 
@@ -30,15 +31,23 @@ CREATE TABLE UserProject (
 
 -- Table Task
 CREATE TABLE Task (
-    id_task INT PRIMARY KEY AUTO_INCREMENT,
-    task_title VARCHAR(100) NOT NULL,
-    task_descrip TEXT,
+    taskId INT PRIMARY KEY AUTO_INCREMENT,
+    taskTitle VARCHAR(100) NOT NULL,
+    taskDescrip TEXT,
     startAt DATE NOT NULL,
     endAt DATE,
     projectId INT NOT NULL,
-    assignedTo INT, -- Référence à l'utilisateur assigné à la tâche
+    status ENUM('Todo', 'In Progress', 'Done') NOT NULL DEFAULT 'Todo',
     FOREIGN KEY (projectId) REFERENCES Project(id_project) ON DELETE CASCADE,
     FOREIGN KEY (assignedTo) REFERENCES Users(id_users) ON DELETE SET NULL
+);
+
+CREATE TABLE UserTask (
+    userId INT,
+    taskId INT,
+    PRIMARY KEY (userId, taskId),
+    FOREIGN KEY (userId) REFERENCES Users(id_users) ON DELETE CASCADE,
+    FOREIGN KEY (taskId) REFERENCES Task(idTask) ON DELETE CASCADE
 );
 
 -- Table Tag
