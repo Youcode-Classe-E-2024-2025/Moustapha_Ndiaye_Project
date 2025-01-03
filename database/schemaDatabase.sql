@@ -15,7 +15,6 @@ CREATE TABLE Project (
     category VARCHAR(50),
     startAt DATE NOT NULL,
     endAt DATE,
-    createdBy INT, 
     isPublic TINYINT(1) NOT NULL DEFAULT 1, 
     FOREIGN KEY (createdBy) REFERENCES Users(id_users) ON DELETE SET NULL
 );
@@ -52,8 +51,8 @@ CREATE TABLE UserTask (
 
 -- Table Tag
 CREATE TABLE Tag (
-    id_tag INT PRIMARY KEY AUTO_INCREMENT,
-    name_tag VARCHAR(100) NOT NULL UNIQUE
+    idTag INT PRIMARY KEY AUTO_INCREMENT,
+    nameTag VARCHAR(100) NOT NULL UNIQUE
 );
 
 -- Table de liaison Task-Tag (pour associer des tags à une tâche)
