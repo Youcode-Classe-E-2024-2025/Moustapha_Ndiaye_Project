@@ -1,3 +1,18 @@
+<?php
+
+    // import require file
+    require_once('../config/config.php') ;
+    require_once('../config/loadDatabase.php');
+
+    // create database
+    $db = new database() ;
+    $pdo = $db->connexion();
+
+    // load script database 
+    $loader = new LoadDatabase($pdo, '../database/schemaDatabase.sql');
+    $loader->fetchData();
+    
+?>
 <!DOCTYPE html>
 <html>
 <head>
