@@ -1,3 +1,24 @@
+<?php
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+    
+    // import require file
+    require_once('../config/config.php') ;
+    require_once('../config/loadDatabase.php');
+    require_once('../src/controllers/LoginController.php');
+
+    // create database
+    $db = new database() ;
+    $pdo = $db->connexion();
+
+    // load script database 
+    $loader = new LoadDatabase($pdo, '../database/schemaDatabase.sql');
+    $loader->fetchData();
+
+    
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,7 +30,17 @@
 </head>
 <body class="bg-gradient-to-br from-blue-100 to-white min-h-screen flex items-center justify-center p-6">
     <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        <!-- Header -->
+       <!-- handle error -->
+     <?php if (!empty($errors)): ?>
+            <div class="bg-red-100" role="alert">
+                <ul class="list-disc list-inside">
+                    <?php foreach($errors as $error): ?>
+                        <li><?php echo htmlspecialchars($error); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>       
+    <!-- Header -->
         <div class="text-center">
             <h2 class="text-3xl font-bold text-gray-800">Welcome Back</h2>
             <p class="mt-2 text-gray-600">Sign in to your account</p>
@@ -38,77 +69,59 @@
             
         </div>
 
-        <!-- Login Form -->
-        <form>
-          <!--Sign in section-->
-         
-          <div
-            class="my-4 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300 dark:before:border-neutral-500 dark:after:border-neutral-500">
-            <p
-              class="mx-4 mb-0 text-center font-semibold dark:text-black">
-              Or
-            </p>
-          </div>
+                  <!-- Login Form -->
+            <form action="loginView" method="POST">
+              <!--Sign in section-->
+              <div class="my-4 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300 dark:before:border-neutral-500 dark:after:border-neutral-500">
+                <p class="mx-4 mb-0 text-center font-semibold dark:text-black">
+                  Or
+                </p>
+              </div>
 
-          <div class="relative mb-6">
-          <!-- Email input -->
-          <input
-            type="text"
-            id="login-form"
-            class="peer block min-h-[auto] w-full rounded border-0 bg-white px-3 py-[0.32rem] leading-[2.15]
-              transition-all duration-200 ease-linear placeholder-transparent focus:placeholder-transparent"
-            placeholder="Email" />
-          <label
-            for="email"
-            class="absolute left-3 top-0 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[2.15]
-              text-neutral-500 transition-all duration-200 ease-out dark:peer-focus:bg-white">
-            Email
-          </label>
-        </div>
+              <div class="relative mb-6">
+                <!-- Email input -->
+                <input
+                  name="email"
+                  type="text"
+                  id="login-form"
+                  class="peer block min-h-[auto] w-full rounded border-0 bg-white px-3 py-[0.32rem] leading-[2.15] transition-all duration-200 ease-linear placeholder-transparent focus:placeholder-transparent"
+                  placeholder="Email" />
+                <label
+                  for="email"
+                  class="absolute left-3 top-0 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[2.15] text-neutral-500 transition-all duration-200 ease-out dark:peer-focus:bg-white">
+                  Email
+                </label>
+              </div>
 
-        <div class="relative mb-6">
-          <!-- Password input -->
-          <input
-            type="password"
-            id="password"
-            class="peer block min-h-[auto] w-full rounded border-0 bg-white px-3 py-[0.32rem] leading-[2.15]
-              transition-all duration-200 ease-linear placeholder-transparent focus:placeholder-transparent"
-            placeholder="Password" />
-          <label
-            for="password"
-            class="absolute left-3 top-0 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[2.15]
-              text-neutral-500 transition-all duration-200 ease-out dark:peer-focus:bg-white">
-            Password
-          </label>
-        </div>
+              <div class="relative mb-6">
+                <!-- Password input -->
+                <input
+                  name="passWord"
+                  type="password"
+                  id="password"
+                  class="peer block min-h-[auto] w-full rounded border-0 bg-white px-3 py-[0.32rem] leading-[2.15] transition-all duration-200 ease-linear placeholder-transparent focus:placeholder-transparent"
+                  placeholder="Password" />
+                <label
+                  for="password"
+                  class="absolute left-3 top-0 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[2.15] text-neutral-500 transition-all duration-200 ease-out dark:peer-focus:bg-white">
+                  Password
+                </label>
+              </div>
 
-          <div class="mb-6 flex items-center justify-between">
-            <!--Forgot password link-->
-            <a href="#!" class="font-medium text-blue-600 hover:underline">Forgot password?</a>
-          </div>
+              <div class="mb-6 flex items-center justify-between">
+                <!-- Forgot password link -->
+                <a href="#!" class="font-medium text-blue-600 hover:underline">Forgot password?</a>
+              </div>
 
-          <!-- Login button -->
-          <div class="text-center lg:text-left">
-            <button
-              type="button"
-              class="inline-block w-full rounded bg-primary px-7 pb-2 pt-3 text-sm font-medium uppercase leading-normal text-white shadow-primary-3 transition duration-150 ease-in-out hover:bg-primary-accent-300 hover:shadow-primary-2 focus:bg-primary-accent-300 focus:shadow-primary-2 focus:outline-none focus:ring-0 active:bg-primary-600 active:shadow-primary-2 dark:shadow-black/30 dark:hover:shadow-dark-strong dark:focus:shadow-dark-strong dark:active:shadow-dark-strong"
-              data-twe-ripple-init
-              data-twe-ripple-color="light">
-              Login
-            </button>
-
-            <!-- Register link -->
-          </div>
-          <div class="text-center lg:text-left">
+              <!-- Login button -->
+              <div class="text-center lg:text-left">
                 <button
-                    type="submit"
-                    class="inline-block w-full rounded bg-blue-600 px-7 pb-2 pt-3 text-sm font-medium uppercase leading-normal text-white shadow-primary-3 transition duration-150 ease-in-out hover:bg-blue-700 focus:bg-blue-700 focus:shadow-primary-2 focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-primary-2"
-                    data-twe-ripple-init
-                    data-twe-ripple-color="light">
-                    Login
+                  type="submit"
+                  class="inline-block w-full rounded bg-blue-600 px-7 pb-2 pt-3 text-sm font-medium uppercase leading-normal text-white shadow-primary-3 transition duration-150 ease-in-out hover:bg-blue-700 focus:bg-blue-700 focus:shadow-primary-2 focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-primary-2">
+                  Login
                 </button>
-            </div>
-        </form>
+              </div>
+            </form>
 
         <p class="text-center text-sm">
             Don't have an account?

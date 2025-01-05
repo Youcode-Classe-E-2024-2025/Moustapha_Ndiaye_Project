@@ -1,32 +1,128 @@
 <?php
 
-class UserController {
-    private $pdo ;
+require_once('../src/models/authentificationModel.php');
+require_once('../config/config.php');
 
-    public function __construct($pdo){
-        $this->pdo = $pdo ;
+class UserController {
+    private $pdo;
+
+    public function __construct($pdo) {
+        $this->pdo = $pdo;
     }
 
-    public function registerUser($fullName, $email, $passWord, $role = 'Visitor'){
+    public function registerUser($fullName, $email, $passWord, $role = 'Visitor') {
         $allowRoles = ['Visitor', 'TeamMember', 'ProjectManager'];
 
-        if (!in_array($role, $allowRoles)){
-            throw new Exeption("Role does not exist") ;
+        if (!in_array($role, $allowRoles)) {
+            throw new Exception("Role does not exist");
         }
 
         $user = new User($fullName, $email, $passWord, $role);
-        $user = $pdo->registerUser($pdo);
+        $user->registerUser($this->pdo);
     }
 
-
-    public function loginUser($email, $passWord){
-        return User::loginUser($this->pdo, $email, $passWord) ;
+    public function loginUser($email, $passWord) {
+        return User::loginUsers($this->pdo, $email, $passWord);
     }
 
-    public function logout(){
+    public function logout() {
         session_start();
         session_destroy();
-        header("Location : login.php") ;
+        header("Location: login.php");
+        exit();
+    }
+}
+
+class RegisterValidator {
+    const MIN_PASSWORD_LENGTH = 8;
+
+    private $fullName;
+    private $email;
+    private $password;
+    private $confirmPassword;
+    private $role;
+
+    public function __construct($fullName, $email, $password, $confirmPassword, $role = 'Visitor') {
+        $this->fullName = $fullName;
+        $this->email = $email;
+        $this->password = $password;
+        $this->confirmPassword = $confirmPassword;
+        $this->role = $role;
+    }
+
+    public function validate() {
+        $errors = [];
+
+        if (empty($this->fullName)) {
+            $errors[] = "Full name is required.";
+        } elseif (strlen($this->fullName) > 100) {
+            $errors[] = "Full name must not exceed 100 characters.";
+        }
+
+        if (empty($this->email)) {
+            $errors[] = "Email is required.";
+        } elseif (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = "Invalid email format.";
+        } elseif (strlen($this->email) > 255) {
+            $errors[] = "Email must not exceed 255 characters.";
+        }
+
+        if (empty($this->password)) {
+            $errors[] = "Password is required.";
+        } elseif (strlen($this->password) < self::MIN_PASSWORD_LENGTH) {
+            $errors[] = "Password must be at least " . self::MIN_PASSWORD_LENGTH . " characters long.";
+        }
+
+        if ($this->password !== $this->confirmPassword) {
+            $errors[] = "Passwords do not match.";
+        }
+
+        return $errors;
+    }
+}
+
+// Démarrer la session pour gérer les messages flash
+session_start();
+
+$errors = [];
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $fullName = trim($_POST['fullName'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $passWord = $_POST['passWord'] ?? '';
+    $confirmPassword = $_POST['confirmPassword'] ?? '';
+
+    $validator = new RegisterValidator($fullName, $email, $passWord, $confirmPassword);
+    $validationErrors = $validator->validate();
+
+    $errors = array_merge($errors, $validationErrors);
+
+    if (empty($errors)) {
+        try {
+            $pdo = new PDO(
+                'mysql:host=localhost;dbname=' . $_ENV['DB_NAME'],
+                $_ENV['DB_USER'],
+                $_ENV['DB_PASSWORD']
+            );
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            $controller = new UserController($pdo);
+            $controller->registerUser($fullName, $email, $passWord, 'Visitor');
+
+            // Enregistrer un message de succès dans la session
+            $_SESSION['success_message'] = "User registered successfully!";
+            header("Location: registerView");
+            exit();
+        } catch (PDOException $e) {
+            // Enregistrer l'erreur dans la session
+            $_SESSION['error_message'] = "Error: " . $e->getMessage();
+            header("Location: registerView");
+            exit();
+        }
+    } else {
+        // Enregistrer les erreurs de validation dans la session
+        $_SESSION['error_message'] = implode('<br>', $errors);
+        header("Location: registerView");
         exit();
     }
 }

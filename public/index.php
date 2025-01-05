@@ -25,6 +25,17 @@ switch ($request_URI) {
     case '/registerView':
         safeRequire('../src/views/registerView.php');
         break;
+    case '/homeUser':
+        safeRequire('../src/views/homeUser.php');
+        break;
+    
+    case '/homeManager':
+        safeRequire('../src/views/homeManager.php');
+        break;
+    case '/loginController':
+        safeRequire('../src/controllers/LoginController.php');
+        break;
+        
 
     default:
         header("HTTP/1.0 404 Not Found");

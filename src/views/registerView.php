@@ -1,8 +1,11 @@
 <?php
-
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
     // import require file
     require_once('../config/config.php') ;
     require_once('../config/loadDatabase.php');
+    require_once('../src/controllers/authentificationController.php');
 
     // create database
     $db = new database() ;
@@ -11,6 +14,11 @@
     // load script database 
     $loader = new LoadDatabase($pdo, '../database/schemaDatabase.sql');
     $loader->fetchData();
+
+    // token
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
     
 ?>
 <!DOCTYPE html>
@@ -23,7 +31,30 @@
 </head>
 <body class="bg-gradient-to-br from-blue-100 to-white min-h-screen flex items-center justify-center p-6">
     <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        <!-- Header -->
+     <!-- handle error -->
+     <?php if (!empty($errors)): ?>
+            <div class="bg-red-100" role="alert">
+                <ul class="list-disc list-inside">
+                    <?php foreach($errors as $error): ?>
+                        <li><?php echo htmlspecialchars($error); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>   
+
+        <?php 
+            if (isset($_SESSION['success_message'])) {
+                echo "<p class='success'>" . $_SESSION['success_message'] . "</p>";
+                unset($_SESSION['success_message']); 
+            }
+            
+            if (isset($_SESSION['error_message'])) {
+                echo "<p class='error'>" . $_SESSION['error_message'] . "</p>";
+                unset($_SESSION['error_message']); 
+            }
+        ?>
+        
+    <!-- Header -->
         <div class="text-center">
             <h2 class="text-3xl font-bold text-gray-800">Create an Account</h2>
             <p class="mt-2 text-gray-600">Register to get started</p>
@@ -56,14 +87,15 @@
         <div class="my-4 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300">
             <p class="mx-4 mb-0 text-center font-semibold">Or</p>
         </div>
-
+ 
         <!-- Formulaire d'inscription -->
-        <form>
+        <form action="registerView" method="POST">
             <!-- Champ Nom -->
             <div class="relative mb-6">
                 <input
                     type="text"
                     id="name"
+                    name="fullName"
                     class="peer block min-h-[auto] w-full rounded border-0 bg-white px-3 py-[0.32rem] leading-[2.15]
                     transition-all duration-200 ease-linear placeholder-transparent focus:placeholder-transparent"
                     placeholder="Name" />
@@ -79,6 +111,7 @@
             <div class="relative mb-6">
                 <input
                     type="email"
+                    name="email"
                     id="email"
                     class="peer block min-h-[auto] w-full rounded border-0 bg-white px-3 py-[0.32rem] leading-[2.15]
                     transition-all duration-200 ease-linear placeholder-transparent focus:placeholder-transparent"
@@ -94,6 +127,7 @@
             <!-- Champ Mot de passe -->
             <div class="relative mb-6">
                 <input
+                    name="passWord"
                     type="password"
                     id="password"
                     class="peer block min-h-[auto] w-full rounded border-0 bg-white px-3 py-[0.32rem] leading-[2.15]
@@ -110,6 +144,7 @@
             <!-- Champ Confirmation du mot de passe -->
             <div class="relative mb-6">
                 <input
+                    name="confirmPassword"
                     type="password"
                     id="confirmPassword"
                     class="peer block min-h-[auto] w-full rounded border-0 bg-white px-3 py-[0.32rem] leading-[2.15]
