@@ -10,44 +10,44 @@ class UserController {
         $this->pdo = $pdo;
     }
 
-    // Méthode pour vérifier les informations d'identification et connecter l'utilisateur
+    // Method to authenticate and log in the user
     public function loginUser($email, $passWord) {
-        // Utilisation de la méthode loginUsers pour vérifier l'utilisateur
+        // Use loginUsers method to authenticate the user
         $user = User::loginUsers($this->pdo, $email, $passWord);
 
         if ($user) {
-            // Si l'utilisateur est un "Visitor", on le met à jour en "TeamMember"
+            // If the user is a "Visitor", update their role to "TeamMember"
             if ($user->getRole() == 'Visitor') {
-                // Mise à jour du rôle dans la base de données
+                // Update role in the database
                 $updateStmt = $this->pdo->prepare("UPDATE User SET role = ? WHERE email = ?");
                 $updateStmt->execute(['TeamMember', $email]);
 
-                // Mettre à jour le rôle de l'utilisateur
+                // Update the user's role
                 $user = new User($user->getFullName(), $user->getEmail(), '', 'TeamMember');
             }
 
-            // Démarrer la session et stocker les informations de l'utilisateur
+            // Start the session and store user information
             session_start();
             $_SESSION['user_id'] = $user->getUserId();
             $_SESSION['user_email'] = $user->getEmail();
-            $_SESSION['user_role'] = $user->getRole(); // Ajouter rôle si nécessaire
-            $_SESSION['success_message'] = "Login successful!"; // Message de succès
+            $_SESSION['user_role'] = $user->getRole(); // Store role if necessary
+            $_SESSION['success_message'] = "Login successful!"; // Success message
 
-            // Rediriger vers la page appropriée en fonction du rôle de l'utilisateur
+            // Redirect based on the user's role
             if ($user->getRole() == 'ProjectManager') {
-                // Rediriger vers la page ProjectManager
+                // Redirect to ProjectManager page
                 header("Location: homeManager");
             } else {
-                // Rediriger vers la page homeUser pour les autres rôles
+                // Redirect to homeUser page for other roles
                 header("Location: homeUser");
             }
             exit();
         } else {
-            // L'email ou le mot de passe est incorrect
+            // Email or password is incorrect
             $_SESSION['error_message'] = "Invalid email or password.";
         }
 
-        header("Location: loginView"); // Rediriger vers la page de login en cas d'erreur
+        header("Location: loginView"); // Redirect to login page on error
         exit();
     }
 
@@ -83,9 +83,13 @@ class LoginValidator {
 
         return $errors;
     }
+    
+    
 }
 
-// Démarrer la session pour gérer les messages flash
+
+
+// Start session to handle flash messages
 session_start();
 
 $errors = [];

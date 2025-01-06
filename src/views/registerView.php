@@ -32,27 +32,26 @@
 <body class="bg-gradient-to-br from-blue-100 to-white min-h-screen flex items-center justify-center p-6">
     <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
      <!-- handle error -->
-     <?php if (!empty($errors)): ?>
-            <div class="bg-red-100" role="alert">
-                <ul class="list-disc list-inside">
-                    <?php foreach($errors as $error): ?>
-                        <li><?php echo htmlspecialchars($error); ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>   
+     
 
         <?php 
+            // Vérification et affichage du message de succès
             if (isset($_SESSION['success_message'])) {
-                echo "<p class='success'>" . $_SESSION['success_message'] . "</p>";
-                unset($_SESSION['success_message']); 
+                echo '<div class="bg-green-100 p-4 rounded-lg text-green-700" role="alert" aria-live="polite">' 
+                    . htmlspecialchars($_SESSION['success_message']) . 
+                    '</div>';
+                unset($_SESSION['success_message']);  // Suppression du message après affichage
             }
             
+            // Vérification et affichage du message d'erreur
             if (isset($_SESSION['error_message'])) {
-                echo "<p class='error'>" . $_SESSION['error_message'] . "</p>";
-                unset($_SESSION['error_message']); 
+                echo '<div class="bg-red-100 p-4 rounded-lg text-red-700" role="alert" aria-live="polite">' 
+                    . htmlspecialchars($_SESSION['error_message']) . 
+                    '</div>';
+                unset($_SESSION['error_message']);  // Suppression du message après affichage
             }
-        ?>
+            ?>
+
         
     <!-- Header -->
         <div class="text-center">
@@ -96,6 +95,7 @@
                     type="text"
                     id="name"
                     name="fullName"
+                    pattern="[A-Za-z\s]{2,}"
                     class="peer block min-h-[auto] w-full rounded border-0 bg-white px-3 py-[0.32rem] leading-[2.15]
                     transition-all duration-200 ease-linear placeholder-transparent focus:placeholder-transparent"
                     placeholder="Name" />

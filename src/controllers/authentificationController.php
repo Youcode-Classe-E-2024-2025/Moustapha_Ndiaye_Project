@@ -1,5 +1,4 @@
 <?php
-
 require_once('../src/models/authentificationModel.php');
 require_once('../config/config.php');
 
@@ -11,10 +10,10 @@ class UserController {
     }
 
     public function registerUser($fullName, $email, $passWord, $role = 'Visitor') {
-        $allowRoles = ['Visitor', 'TeamMember', 'ProjectManager'];
+        $allowedRoles = ['Visitor', 'TeamMember', 'ProjectManager'];
 
-        if (!in_array($role, $allowRoles)) {
-            throw new Exception("Role does not exist");
+        if (!in_array($role, $allowedRoles)) {
+            throw new Exception("Invalid role specified.");
         }
 
         $user = new User($fullName, $email, $passWord, $role);
@@ -81,9 +80,17 @@ class RegisterValidator {
     }
 }
 
-// Démarrer la session pour gérer les messages flash
-session_start();
+class ErrorHandler {
+    public static function handle($exception) {
+        // Log the error message
+        error_log($exception->getMessage());
+        
+        // Store a user-friendly error message in session
+        $_SESSION['error_message'] = "An error occurred. Please try again later.";
+    }
+}
 
+session_start();
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -107,21 +114,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             $controller = new UserController($pdo);
-            $controller->registerUser($fullName, $email, $passWord, 'Visitor');
+            $controller->registerUser($fullName, $email, $passWord);
 
-            // Enregistrer un message de succès dans la session
             $_SESSION['success_message'] = "User registered successfully!";
             header("Location: registerView");
             exit();
-        } catch (PDOException $e) {
-            // Enregistrer l'erreur dans la session
-            $_SESSION['error_message'] = "Error: " . $e->getMessage();
+        } catch (Exception $e) {
+            ErrorHandler::handle($e);
             header("Location: registerView");
             exit();
         }
     } else {
-        // Enregistrer les erreurs de validation dans la session
-        $_SESSION['error_message'] = implode('<br>', $errors);
+        $_SESSION['error_message'] = implode("\n", $errors);
         header("Location: registerView");
         exit();
     }

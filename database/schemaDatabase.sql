@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS Project (
     category VARCHAR(50),
     startAt DATE NOT NULL,
     endAt DATE,
+    status ENUM('Todo', 'In Progress', 'Done') NOT NULL DEFAULT 'Todo',
     isPublic TINYINT(1) NOT NULL DEFAULT 1
 );
 
