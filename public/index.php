@@ -35,6 +35,9 @@ switch ($request_URI) {
     case '/loginController':
         safeRequire('../src/controllers/LoginController.php');
         break;
+    case '/projectController':
+        safeRequire('../src/controllers/projectController.php');
+        break;
         
 
     default:

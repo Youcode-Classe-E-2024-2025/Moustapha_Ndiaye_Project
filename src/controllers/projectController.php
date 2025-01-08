@@ -31,4 +31,7 @@ class ProjectController {
         // Include the view file
         include($viewPath);
     }
+
+
+    
 }

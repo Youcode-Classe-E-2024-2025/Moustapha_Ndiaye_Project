@@ -20,17 +20,17 @@ CREATE TABLE IF NOT EXISTS Project (
     startAt DATE NOT NULL,
     endAt DATE,
     status ENUM('Todo', 'In Progress', 'Done') NOT NULL DEFAULT 'Todo',
-    isPublic TINYINT(1) NOT NULL DEFAULT 1
+    isPublic TINYINT(1) NOT NULL DEFAULT 1,
+    CONSTRAINT chk_project_dates CHECK (endAt IS NULL OR endAt >= startAt)
 );
-
 
 -- Table de liaison UserProject
 CREATE TABLE IF NOT EXISTS UserProject (
     userId INT,
-    projectId INT,
-    PRIMARY KEY (userId, projectId),
+    idProject INT,
+    PRIMARY KEY (userId, idProject),
     FOREIGN KEY (userId) REFERENCES User(userId) ON DELETE CASCADE,
-    FOREIGN KEY (projectId) REFERENCES Project(idProject) ON DELETE CASCADE
+    FOREIGN KEY (idProject) REFERENCES Project(idProject) ON DELETE CASCADE
 );
 
 -- Table Task
@@ -40,11 +40,13 @@ CREATE TABLE IF NOT EXISTS Task (
     taskDescrip TEXT,
     startAt DATE NOT NULL,
     endAt DATE,
-    projectId INT NOT NULL,
+    idProject INT NOT NULL,
     status ENUM('Todo', 'In Progress', 'Done') NOT NULL DEFAULT 'Todo',
-    FOREIGN KEY (projectId) REFERENCES Project(idProject) ON DELETE CASCADE
+    assignedTo INT, 
+    FOREIGN KEY (idProject) REFERENCES Project(idProject) ON DELETE CASCADE,
+    FOREIGN KEY (assignedTo) REFERENCES User(userId) ON DELETE SET NULL,
+    CONSTRAINT chk_task_dates CHECK (endAt IS NULL OR endAt >= startAt)
 );
-
 
 -- Table UserTask
 CREATE TABLE IF NOT EXISTS UserTask (
@@ -67,5 +69,5 @@ CREATE TABLE IF NOT EXISTS TaskTag (
     idTag INT,
     PRIMARY KEY (taskId, idTag),
     FOREIGN KEY (taskId) REFERENCES Task(taskId) ON DELETE CASCADE,
-    FOREIGN KEY (idTag) REFERENCES Tag(taskId) ON DELETE CASCADE
+    FOREIGN KEY (idTag) REFERENCES Tag(idTag) ON DELETE CASCADE 
 );
