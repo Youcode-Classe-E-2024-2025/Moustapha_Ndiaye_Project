@@ -49,3 +49,16 @@ function fillUpdateForm(project) {
 function confirmDelete(projectId) {
     return confirm(`Are you sure you want to delete project ${projectId}?`);
 }
+
+
+ // Smooth scrolling for sidebar links
+ document.querySelectorAll('.sidebar a').forEach(link => {
+  link.addEventListener('click', function (e) {
+      e.preventDefault(); // Prevent default anchor behavior
+      const targetId = this.getAttribute('href').substring(1); // Get the target section ID
+      const targetSection = document.getElementById(targetId); // Find the target section
+      if (targetSection) {
+          targetSection.scrollIntoView({ behavior: 'smooth' }); // Smooth scroll to the section
+      }
+  });
+});
