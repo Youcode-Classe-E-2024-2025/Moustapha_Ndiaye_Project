@@ -81,3 +81,19 @@ class ProjectController {
         }
     }
 }
+
+class UserController {
+    private $UserModel ;
+
+    public function __construct(UserModel $UserModel){
+        $this->UserModel = $UserModel ;
+    }
+
+    public function showAllUsers(){
+        $users = $this->UserModel->getAllUsers();
+
+        if(empty($users)){
+            echo "<script>alert('No users found')</script>";
+        }
+    }
+}

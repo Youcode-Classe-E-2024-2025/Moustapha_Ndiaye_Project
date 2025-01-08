@@ -22,9 +22,11 @@ $loader->fetchData();
 
 // Instantiate the model
 $projectModel = new ProjectModel($pdo);
+$userModel = new UserModel($pdo);
 
 // Instantiate the controller with the model
 $projectController = new ProjectController($projectModel);
+$userController = new UserController($userModel) ;
 
 // Handle the request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -47,9 +49,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $projectController->showAllProjects();
 $projects = $projectModel->getAllProjects();
 
+// display all users
+$userController->showAllUsers();
+$users = $userModel-> getAllUsers();
+// var_dump($users);
+
 // Check if projects were found
-if (empty($projects)) {
-    echo "No projects found.";
+if (empty($projects || $users)) {
+    echo "No found.";
     exit;
 }
 ?>
@@ -205,9 +212,15 @@ if (empty($projects)) {
 
         <!-- Users Section -->
         <div id="users" class="section">
-            <h2>Users</h2>
-            <p>This is the Users section. Here you can manage all users.</p>
-            <!-- Add your users content here -->
+        <h2>Users</h2>
+            <!-- Liste des utilisateurs -->
+            <div class="flex flex-wrap gap-3">
+                <?php foreach ($users as $user) : ?>
+                    <div class="user-card bg-white p-2 rounded-lg shadow-md">
+                        <h2 class="text-xl font-bold"><?= htmlspecialchars($user['fullName'] ?? 'No name') ?></h2>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
 
         <!-- Tasks Section -->

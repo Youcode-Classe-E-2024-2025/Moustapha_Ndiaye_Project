@@ -62,3 +62,21 @@ class ProjectModel {
         return $stmt->rowCount() > 0; // Retourne true si la suppression a réussi
     }
 }
+
+
+class UserModel {
+    private $pdo ;
+
+    public function __construct($pdo){
+        $this->pdo = $pdo ;
+    }
+
+    public function getAllUsers(){
+        $sql = "
+            SELECT fullName FROM User WHERE role = 'TeamMember'
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO :: FETCH_ASSOC);
+    }
+}
