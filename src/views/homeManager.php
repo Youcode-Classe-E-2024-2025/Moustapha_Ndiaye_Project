@@ -157,7 +157,7 @@ if (empty($projects)) {
                 <!-- Update Form (hidden by default) -->
                 <div id="update-form-<?= $project['idProject'] ?>" class="update-form mt-6">
                     <h3 class="text-lg font-bold mb-4">Edit Project</h3>
-                    <form action="../controllers/ProjectController.php" method="POST" class="space-y-4">
+                    <form action="homeManager" method="POST" class="space-y-4">
                         <input type="hidden" name="idProject" value="<?= $project['idProject'] ?>">
                         <div>
                             <label for="projectTitle" class="block text-sm font-medium text-gray-700">Project Title:</label>

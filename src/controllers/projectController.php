@@ -43,4 +43,26 @@ class ProjectController {
             }
         }
     }
+
+    public function handleUpdateProject() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateProject'])) {
+            $idProject = $_POST['idProject'];
+            $projectTitle = $_POST['projectTitle'];
+            $projectDescrip = $_POST['projectDescrip'];
+            $category = $_POST['category'];
+            $startAt = $_POST['startAt'];
+            $endAt = $_POST['endAt'];
+            $isPublic = $_POST['isPublic'];
+            $status = $_POST['status'];
+    
+            // Mettre à jour le projet
+            $success = $this->projectModel->updateProject($idProject, $projectTitle, $projectDescrip, $category, $startAt, $endAt, $isPublic, $status);
+    
+            if ($success) {
+                echo "<script>alert('Projet mis à jour avec succès!');</script>";
+            } else {
+                echo "<script>alert('Erreur lors de la mise à jour du projet.');</script>";
+            }
+        }
+    }
 }

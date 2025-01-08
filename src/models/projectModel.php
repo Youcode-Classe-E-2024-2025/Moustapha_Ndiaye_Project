@@ -30,4 +30,29 @@ class ProjectModel {
         ]);
         return $stmt->rowCount() > 0; 
     }
+
+    public function updateProject($idProject, $projectTitle, $projectDescrip, $category, $startAt, $endAt, $isPublic, $status) {
+        $sql = "UPDATE Project
+                SET projectTitle = :projectTitle,
+                    projectDescrip = :projectDescrip,
+                    category = :category,
+                    startAt = :startAt,
+                    endAt = :endAt,
+                    isPublic = :isPublic,
+                    status = :status
+                WHERE idProject = :idProject";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'idProject' => $idProject,
+            'projectTitle' => $projectTitle,
+            'projectDescrip' => $projectDescrip,
+            'category' => $category,
+            'startAt' => $startAt,
+            'endAt' => $endAt,
+            'isPublic' => $isPublic,
+            'status' => $status
+        ]);
+        return $stmt->rowCount() > 0; // Retourne true si la mise à jour a réussi
+    }
+
 }
