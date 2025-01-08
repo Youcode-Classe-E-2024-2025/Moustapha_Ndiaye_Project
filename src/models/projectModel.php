@@ -55,4 +55,10 @@ class ProjectModel {
         return $stmt->rowCount() > 0; // Retourne true si la mise à jour a réussi
     }
 
+    public function deleteProject($idProject) {
+        $sql = "DELETE FROM Project WHERE idProject = :idProject";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['idProject' => $idProject]);
+        return $stmt->rowCount() > 0; // Retourne true si la suppression a réussi
+    }
 }

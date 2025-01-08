@@ -145,7 +145,7 @@ if (empty($projects)) {
                             class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600">
                         Edit
                     </button>
-                    <form action="../controllers/ProjectController.php" method="POST" onsubmit="return confirmDelete(<?= $project['idProject'] ?>);">
+                    <form action="homeManager" method="POST" onsubmit="return confirmDelete(<?= $project['idProject'] ?>);">
                         <input type="hidden" name="idProject" value="<?= $project['idProject'] ?>">
                         <button type="submit" name="deleteProject"
                                 class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">

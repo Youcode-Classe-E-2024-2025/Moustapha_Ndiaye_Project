@@ -65,4 +65,19 @@ class ProjectController {
             }
         }
     }
+
+    public function handleDeleteProject() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteProject'])) {
+            $idProject = $_POST['idProject'];
+    
+            // Supprimer le projet
+            $success = $this->projectModel->deleteProject($idProject);
+    
+            if ($success) {
+                echo "<script>alert('Projet supprimé avec succès!');</script>";
+            } else {
+                echo "<script>alert('Erreur lors de la suppression du projet..');</script>";
+            }
+        }
+    }
 }
