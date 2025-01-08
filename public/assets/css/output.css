@@ -1053,6 +1053,11 @@ label {
   transition: all 0.2s ease;
 }
 
+.update-form {
+  display: none;
+  /* Hide the update form by default */
+}
+
 .before\:mt-0\.5::before {
   content: var(--tw-content);
   margin-top: 0.125rem;
@@ -1192,4 +1197,3 @@ label {
     background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
   }
 }
-

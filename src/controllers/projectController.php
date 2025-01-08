@@ -17,21 +17,30 @@ class ProjectController {
         // Check if projects were found
         if (empty($projects)) {
             echo "No projects found.";
-        } else {
-            // Pass the data to the view
-            $this->renderView('../views/homeManager.php', ['projects' => $projects]);
-        }
+        } 
     }
-
-    // Helper method to render views
-    private function renderView($viewPath, $data = []) {
-        // Extract data into variables
-        extract($data);
-
-        // Include the view file
-        include($viewPath);
-    }
-
 
     
+
+
+    public function handleAddProject() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addProject'])) {
+            $projectTitle = $_POST['projectTitle'];
+            $projectDescrip = $_POST['projectDescrip'];
+            $category = $_POST['category'];
+            $startAt = $_POST['startAt'];
+            $endAt = $_POST['endAt'];
+            $isPublic = $_POST['isPublic'];
+            $status = $_POST['status'];
+    
+            // Ajouter le projet
+            $success = $this->projectModel->addProject($projectTitle, $projectDescrip, $category, $startAt, $endAt, $isPublic, $status);
+    
+            if ($success) {
+                echo "<script>alert('Projet ajouté avec succès !');</script>";
+            } else {
+                echo "<script>alert('Erreur lors de l'ajout du projet.');</script>";
+            }
+        }
+    }
 }

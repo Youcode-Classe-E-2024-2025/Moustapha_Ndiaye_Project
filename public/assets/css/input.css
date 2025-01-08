@@ -17,3 +17,6 @@
     transition: all 0.2s ease;
   }
 
+  .update-form {
+    display: none; /* Hide the update form by default */
+}
