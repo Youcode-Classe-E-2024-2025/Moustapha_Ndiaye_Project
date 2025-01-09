@@ -2,9 +2,10 @@
 // homeManager
 
 // Enable error reporting for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/error.log');
 error_reporting(E_ALL);
+ini_set('display_errors', 1); 
 
 // Import required files
 require_once('../config/config.php');
@@ -16,77 +17,98 @@ require_once('../src/controllers/projectController.php');
 $db = new Database();
 $pdo = $db->connexion();
 
-
-
-// Instantiate the model
+// Instantiate the models
 $projectModel = new ProjectModel($pdo);
-// $userModel = new UserModel($pdo);
-// $taskModel = new TaskModel($pdo);
-$taskModel = new TaskModel($pdo); // Supposons que $pdo est une instance de PDO
+$taskModel = new TaskModel($pdo);
 $userModel = new UserModel($pdo);
 
-
-// Instantiate the controller with the model
+// Instantiate the controllers
 $projectController = new ProjectController($projectModel);
-$userController = new UserController($userModel) ;
-// $taskController = new TaskController($taskModel); 
+$userController = new UserController($userModel);
 $taskController = new TaskController($taskModel, $userModel, $projectModel);
-
 
 // Handle the request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['addProject'])) {
         $projectController->handleAddProject();
-        header('Location: homeManager'); // Redirect after adding
+        header('Location: homeManager');
         exit;
     } elseif (isset($_POST['updateProject'])) {
         $projectController->handleUpdateProject();
-        header('Location: homeManager'); // Redirect after updating
+        header('Location: homeManager');
         exit;
     } elseif (isset($_POST['deleteProject'])) {
         $projectController->handleDeleteProject();
-        header('Location: homeManager'); // Redirect after deleting
+        header('Location: homeManager');
+        exit;
+    } elseif (isset($_POST['addTask'])) {
+        $taskController->handleAddTask();
+        header('Location: homeManager');
+        exit;
+    } elseif (isset($_POST['updateTask'])) {
+        $taskController->handleUpdateTask();
+        header('Location: homeManager');
+        exit;
+    } elseif (isset($_POST['deleteTask'])) {
+        $taskController->handleDeleteTask();
+        header('Location: homeManager');
         exit;
     }
 }
 
-// Display all projects
-$projectController->showAllProjects();
+// Fetch data
 $projects = $projectModel->getAllProjects();
-
-// display all users
-$userController->showAllUsers();
-$users = $userModel-> getAllUsers();
-
-// display all atsk
-$taskController->showAllTasks(); 
+$users = $userModel->getAllUsers();
 $tasks = $taskModel->getAllTasks();
-// var_dump($tasks);
 
-// Gérer les actions (ajout, mise à jour, suppression)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['addTask'])) {
-        $taskController->handleAddTask();
-    } elseif (isset($_POST['updateTask'])) {
-        $taskController->handleUpdateTask();
-    } elseif (isset($_POST['deleteTask'])) {
-        $taskController->handleDeleteTask();
-    }
-}
-
-// Récupérer les tâches pour affichage
-// $tasks = $taskController->showAllTasks();
-
-// Check if projects were found
-if (empty($projects || $users)) {
-    echo "No found.";
+// Check if data is empty
+if (empty($projects) && empty($users)) {
+    echo "No projects or users found.";
     exit;
 }
+
 // Load database schema (if needed)
 $loader = new LoadDatabase($pdo, '../database/schemaDatabase.sql');
 $loader->fetchData();
-?>
 
+// Prepare data for the timeline
+$timelineData = [];
+foreach ($projects as $project) {
+    $timelineData[] = [
+        'id' => $project['idProject'],
+        'content' => htmlspecialchars($project['projectTitle']),
+        'start' => $project['startAt'],
+        'end' => $project['endAt'],
+        'type' => 'project',
+    ];
+}
+foreach ($tasks as $task) {
+    $timelineData[] = [
+        'id' => 'task_' . $task['taskId'],
+        'content' => htmlspecialchars($task['taskTitle']),
+        'start' => $task['startAt'],
+        'end' => $task['endAt'],
+        'type' => 'task',
+    ];
+}
+$timelineJson = json_encode($timelineData);
+
+// Prepare data for statistics
+$taskStatusCount = [
+    'Todo' => 0,
+    'In Progress' => 0,
+    'Done' => 0,
+];
+foreach ($tasks as $task) {
+    if (isset($taskStatusCount[$task['status']])) {
+        $taskStatusCount[$task['status']]++;
+    }
+}
+$taskStatusJson = json_encode($taskStatusCount);
+
+// Include the view
+// include 'views/homeManager.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,7 +116,11 @@ $loader->fetchData();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="assets/css/input.css">
     <link rel="stylesheet" href="assets/css/output.css">
-    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis-timeline-graph2d.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis-timeline-graph2d.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Project Manager</title>
 </head>
 <body class="bg-gradient-to-br from-blue-100 to-white p-8 min-h-screen">
     <!-- Sidebar -->
@@ -104,7 +130,8 @@ $loader->fetchData();
             <li><a href="#users">Users</a></li>
             <li><a href="#tasks">Tasks</a></li>
             <li><a href="#statistics">Statistics</a></li>
-            <li><a href="#statistics">Persmissions</a></li>
+            <li><a href="#timeline">Timeline</a></li>
+            <li><a href="#permissions">Permissions</a></li>
         </ul>
     </div>
 
@@ -113,8 +140,6 @@ $loader->fetchData();
         <!-- Projects Section -->
         <div id="projects" class="section">
             <h2>Projects</h2>
-            <!-- Add your projects content here -->
-
             <div class="max-w-4xl mx-auto">
                 <!-- Button to Open the Add Project Modal -->
                 <button onclick="openModal('addProjectModal')" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mb-8">
@@ -238,8 +263,7 @@ $loader->fetchData();
 
         <!-- Users Section -->
         <div id="users" class="section">
-        <h2>Users</h2>
-            <!-- Liste des utilisateurs -->
+            <h2>Users</h2>
             <div class="flex flex-wrap gap-3 max-w-4xl mx-auto">
                 <?php foreach ($users as $user) : ?>
                     <div class="user-card bg-white p-2 rounded-lg shadow-md">
@@ -249,215 +273,203 @@ $loader->fetchData();
             </div>
         </div>
 
-       <!-- Afficher les tâches dans la vue -->
-<div id="tasks" class="section">
-    <h2 class="">Tasks</h2>
-    <div class="max-w-4xl mx-auto">
-            <!-- Button to Open the Add Task Modal -->
-            <button onclick="openModal('addTaskModal')" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mb-8">
-                Add Task
-            </button>
+        <!-- Tasks Section -->
+        <div id="tasks" class="section">
+            <h2>Tasks</h2>
+            <div class="max-w-4xl mx-auto">
+                <!-- Button to Open the Add Task Modal -->
+                <button onclick="openModal('addTaskModal')" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mb-8">
+                    Add Task
+                </button>
 
-           <!-- Add Task Modal -->
-<div id="addTaskModal" class="modal">
-    <div class="modal-content">
-        <h2 class="text-2xl font-bold mb-4">New Task</h2>
-        <form action="homeManager" method="POST" class="space-y-4">
-            <!-- Champ caché pour l'ID de la tâche (si nécessaire) -->
-            <input type="hidden" id="taskId" name="taskId" value="">
-
-            <!-- Titre de la tâche -->
-            <div>
-                <label for="taskTitle" class="block text-sm font-medium text-gray-700">Task Title:</label>
-                <input type="text" id="taskTitle" name="taskTitle" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-            </div>
-
-            <!-- Description de la tâche -->
-            <div>
-                <label for="taskDescrip" class="block text-sm font-medium text-gray-700">Description:</label>
-                <textarea id="taskDescrip" name="taskDescrip" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"></textarea>
-            </div>
-
-            <!-- Date de début -->
-            <div>
-                <label for="startAt" class="block text-sm font-medium text-gray-700">Start Date:</label>
-                <input type="date" id="startAt" name="startAt" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-            </div>
-
-            <!-- Date de fin -->
-            <div>
-                <label for="endAt" class="block text-sm font-medium text-gray-700">End Date:</label>
-                <input type="date" id="endAt" name="endAt" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-            </div>
-
-            <!-- Projet associé -->
-            <div>
-                <label for="idProject" class="block text-sm font-medium text-gray-700">Project:</label>
-                <select id="idProject" name="idProject" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                    <option value="">Select a project</option>
-                    <?php if (!empty($projects)) : ?>
-                        <?php foreach ($projects as $project) : ?>
-                            <option value="<?= htmlspecialchars($project['idProject'] ?? '') ?>">
-                                <?= htmlspecialchars($project['projectTitle'] ?? '') ?>
-                            </option>
-                        <?php endforeach; ?>
-                    <?php else : ?>
-                        <option value="">No projects available</option>
-                    <?php endif; ?>
-                </select>
-            </div>
-
-            <!-- Statut de la tâche -->
-            <div>
-                <label for="status" class="block text-sm font-medium text-gray-700">Status:</label>
-                <select id="status" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                    <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                </select>
-            </div>
-
-            <!-- Assigné à -->
-            <div>
-                <label for="assignedTo" class="block text-sm font-medium text-gray-700">Assigned To:</label>
-                <select id="assignedTo" name="assignedTo" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                    <option value="">Select a user</option>
-                    <?php if (!empty($users)) : ?>
-                        <?php foreach ($users as $user) : ?>
-                            <option value="<?= htmlspecialchars($user['userId'] ?? '') ?>">
-                                <?= htmlspecialchars($user['fullName'] ?? '') ?>
-                            </option>
-                        <?php endforeach; ?>
-                    <?php else : ?>
-                        <option value="">No users available</option>
-                    <?php endif; ?>
-                </select>
-            </div>
-
-            <!-- Boutons -->
-            <div class="flex justify-end space-x-4">
-                <button type="submit" name="addTask" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add Task</button>
-                <button type="button" onclick="closeModal('addTaskModal')" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-    <?php if (!empty($tasks)) : ?>
-        <div class="task-list flex flex-wrap gap-3">
-            <?php foreach ($tasks as $task) : ?>
-                <div class="task-card bg-white p-6 rounded-lg shadow-md mb-6">
-                    <h2 class="text-xl font-bold mb-2"><?= htmlspecialchars($task['taskTitle'] ?? 'No title') ?></h2>
-                    <p class="text-gray-700 mb-2"><strong>Description: </strong><?= htmlspecialchars($task['taskDescrip'] ?? 'No description') ?></p>
-                    <p class="text-gray-700 mb-2"><strong>Start Date:</strong> <?= htmlspecialchars($task['startAt'] ?? 'No start date') ?></p>
-                    <p class="text-gray-700 mb-2"><strong>End Date:</strong> <?= htmlspecialchars($task['endAt'] ?? 'No end date') ?></p>
-                    <p class="text-gray-700 mb-2"><strong>Project:</strong> <?= htmlspecialchars($task['projectTitle'] ?? 'No project') ?></p>  <!-- Afficher le projectTitle -->
-                    <p class="text-gray-700 mb-2"><strong>Status:</strong> <?= htmlspecialchars($task['status'] ?? 'No status') ?></p>
-                    <p class="text-gray-700 mb-4">
-                        <strong>Assigned To:</strong>
-                        <?= htmlspecialchars($task['assignedUserName'] ?? 'Not assigned') ?>
-                    </p>
-
-                    <!-- Edit and Delete Buttons -->
-                    <div class="flex space-x-4">
-                        <button onclick="fillUpdateTaskForm(<?= htmlspecialchars(json_encode($task)) ?>); openModal('updateTaskModal')" class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600">
-                            Edit
-                        </button>
-                        <form action="homeManager" method="POST" onsubmit="return confirmDeleteTask(<?= $task['taskId'] ?>)">
-                            <input type="hidden" name="taskId" value="<?= $task['taskId'] ?>">
-                            <button type="submit" name="deleteTask" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
-                                Delete
-                            </button>
+                <!-- Add Task Modal -->
+                <div id="addTaskModal" class="modal">
+                    <div class="modal-content">
+                        <h2 class="text-2xl font-bold mb-4">New Task</h2>
+                        <form action="homeManager" method="POST" class="space-y-4">
+                            <input type="hidden" id="taskId" name="taskId" value="">
+                            <div>
+                                <label for="taskTitle" class="block text-sm font-medium text-gray-700">Task Title:</label>
+                                <input type="text" id="taskTitle" name="taskTitle" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="taskDescrip" class="block text-sm font-medium text-gray-700">Description:</label>
+                                <textarea id="taskDescrip" name="taskDescrip" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"></textarea>
+                            </div>
+                            <div>
+                                <label for="startAt" class="block text-sm font-medium text-gray-700">Start Date:</label>
+                                <input type="date" id="startAt" name="startAt" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="endAt" class="block text-sm font-medium text-gray-700">End Date:</label>
+                                <input type="date" id="endAt" name="endAt" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="idProject" class="block text-sm font-medium text-gray-700">Project:</label>
+                                <select id="idProject" name="idProject" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                    <option value="">Select a project</option>
+                                    <?php if (!empty($projects)) : ?>
+                                        <?php foreach ($projects as $project) : ?>
+                                            <option value="<?= htmlspecialchars($project['idProject'] ?? '') ?>">
+                                                <?= htmlspecialchars($project['projectTitle'] ?? '') ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php else : ?>
+                                        <option value="">No projects available</option>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="status" class="block text-sm font-medium text-gray-700">Status:</label>
+                                <select id="status" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                    <option value="Todo">Todo</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Done">Done</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="assignedTo" class="block text-sm font-medium text-gray-700">Assigned To:</label>
+                                <select id="assignedTo" name="assignedTo" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                    <option value="">Select a user</option>
+                                    <?php if (!empty($users)) : ?>
+                                        <?php foreach ($users as $user) : ?>
+                                            <option value="<?= htmlspecialchars($user['userId'] ?? '') ?>">
+                                                <?= htmlspecialchars($user['fullName'] ?? '') ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php else : ?>
+                                        <option value="">No users available</option>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                            <div class="flex justify-end space-x-4">
+                                <button type="submit" name="addTask" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add Task</button>
+                                <button type="button" onclick="closeModal('addTaskModal')" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
+                            </div>
                         </form>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        </div>
-    <?php else : ?>
-        <p class="text-gray-600">No tasks found.</p>
-    <?php endif; ?>
-</div>
 
-<!-- Update Task Modal -->
-<div id="updateTaskModal" class="modal">
-    <div class="modal-content">
-        <h3 class="text-lg font-bold mb-4">Edit Task</h3>
-        <form action="homeManager" method="POST" class="space-y-4">
-            <input type="hidden" id="updateTaskId" name="taskId" value="<?= htmlspecialchars($task['taskId'] ?? '') ?>">
-            
-            <div>
-                <label for="updateTaskTitle" class="block text-sm font-medium text-gray-700">Task Title:</label>
-                <input type="text" id="updateTaskTitle" name="taskTitle" value="<?= htmlspecialchars($task['taskTitle'] ?? '') ?>" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                <!-- Task List -->
+                <?php if (!empty($tasks)) : ?>
+                    <div class="task-list flex flex-wrap gap-3">
+                        <?php foreach ($tasks as $task) : ?>
+                            <div class="task-card bg-white p-6 rounded-lg shadow-md mb-6">
+                                <h2 class="text-xl font-bold mb-2"><?= htmlspecialchars($task['taskTitle'] ?? 'No title') ?></h2>
+                                <p class="text-gray-700 mb-2"><strong>Description: </strong><?= htmlspecialchars($task['taskDescrip'] ?? 'No description') ?></p>
+                                <p class="text-gray-700 mb-2"><strong>Start Date:</strong> <?= htmlspecialchars($task['startAt'] ?? 'No start date') ?></p>
+                                <p class="text-gray-700 mb-2"><strong>End Date:</strong> <?= htmlspecialchars($task['endAt'] ?? 'No end date') ?></p>
+                                <p class="text-gray-700 mb-2"><strong>Project:</strong> <?= htmlspecialchars($task['projectTitle'] ?? 'No project') ?></p>
+                                <p class="text-gray-700 mb-2"><strong>Status:</strong> <?= htmlspecialchars($task['status'] ?? 'No status') ?></p>
+                                <p class="text-gray-700 mb-4">
+                                    <strong>Assigned To:</strong>
+                                    <?= htmlspecialchars($task['assignedUserName'] ?? 'Not assigned') ?>
+                                </p>
+
+                                <!-- Edit and Delete Buttons -->
+                                <div class="flex space-x-4">
+                                    <button onclick="fillUpdateTaskForm(<?= htmlspecialchars(json_encode($task)) ?>); openModal('updateTaskModal')" class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600">
+                                        Edit
+                                    </button>
+                                    <form action="homeManager" method="POST" onsubmit="return confirmDeleteTask(<?= $task['taskId'] ?>)">
+                                        <input type="hidden" name="taskId" value="<?= $task['taskId'] ?>">
+                                        <button type="submit" name="deleteTask" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else : ?>
+                    <p class="text-gray-600">No tasks found.</p>
+                <?php endif; ?>
             </div>
-            
-            <div>
-                <label for="updateTaskDescrip" class="block text-sm font-medium text-gray-700">Description:</label>
-                <textarea id="updateTaskDescrip" name="taskDescrip" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"><?= htmlspecialchars($task['taskDescrip'] ?? '') ?></textarea>
-            </div>
-            
-            <div>
-                <label for="updateStartAt" class="block text-sm font-medium text-gray-700">Start Date:</label>
-                <input type="date" id="updateStartAt" name="startAt" value="<?= htmlspecialchars($task['startAt'] ?? '') ?>" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-            </div>
-            
-            <div>
-                <label for="updateEndAt" class="block text-sm font-medium text-gray-700">End Date:</label>
-                <input type="date" id="updateEndAt" name="endAt" value="<?= htmlspecialchars($task['endAt'] ?? '') ?>" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-            </div>
-            
-            <div>
-                <label for="updateIdProject" class="block text-sm font-medium text-gray-700">Project:</label>
-                <select id="updateIdProject" name="idProject" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                    <option value="">Select a project</option>
-                    <?php foreach ($projects as $project) : ?>
-                        <option value="<?= htmlspecialchars($project['idProject'] ?? '') ?>" <?= ($task['idProject'] ?? '') == $project['idProject'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($project['projectTitle'] ?? '') ?>  <!-- Afficher uniquement le projectTitle -->
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <div>
-                <label for="updateStatus" class="block text-sm font-medium text-gray-700">Status:</label>
-                <select id="updateStatus" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                    <option value="Pending" <?= ($task['status'] ?? '') === 'Pending' ? 'selected' : '' ?>>Pending</option>
-                    <option value="In Progress" <?= ($task['status'] ?? '') === 'In Progress' ? 'selected' : '' ?>>In Progress</option>
-                    <option value="Completed" <?= ($task['status'] ?? '') === 'Completed' ? 'selected' : '' ?>>Completed</option>
-                </select>
-            </div>
-            
-            <div>
-                <label for="updateAssignedTo" class="block text-sm font-medium text-gray-700">Assigned To:</label>
-                <select id="updateAssignedTo" name="assignedTo" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                    <option value="">Select a user</option>
-                    <?php foreach ($users as $user) : ?>
-                        <option value="<?= htmlspecialchars($user['userId'] ?? '') ?>" <?= ($task['assignedTo'] ?? '') == $user['userId'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($user['fullName'] ?? '') ?>  <!-- Afficher uniquement le fullName -->
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <button type="submit" name="updateTask" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Update Task</button>
-            <button type="button" onclick="closeModal('updateTaskModal')" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
-        </form>
-    </div>
-</div>
+        </div>
+
         <!-- Statistics Section -->
         <div id="statistics" class="section">
             <h2>Statistics</h2>
-            <p>This is the Statistics section. Here you can view project statistics.</p>
-            <!-- Add your statistics content here -->
+            <canvas id="taskStatusChart" width="400" height="200"></canvas>
+            <script>
+                const taskStatusData = <?= $taskStatusJson ?>;
+
+                const ctx = document.getElementById('taskStatusChart').getContext('2d');
+                const taskStatusChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(taskStatusData),
+                        datasets: [{
+                            label: 'Tasks by Status',
+                            data: Object.values(taskStatusData),
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(75, 192, 192, 1)',
+                            ],
+                            borderWidth: 1,
+                        }],
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                            },
+                        },
+                    },
+                });
+            </script>
         </div>
 
-        <!-- Statistics Section -->
-        <div id="statistics" class="section">
-            <h2>Persmissions</h2>
-            <p>This is the Persmissions section. Here you can view project Persmissions.</p>
-            <!-- Add your statistics content here -->
+        <!-- Timeline Section -->
+        <div id="timeline" class="section">
+            <h2>Timeline</h2>
+            <div id="visualization" style="width: 100%; height: 400px;"></div>
+            <script>
+                // Récupérer les données de la timeline
+                const timelineData = <?= $timelineJson ?>;
+
+                // Convertir les données pour Vis.js
+                const items = new vis.DataSet(timelineData);
+
+                // Créer la timeline
+                const container = document.getElementById('visualization');
+                const options = {
+                    showCurrentTime: true,
+                    zoomable: true,
+                    moveable: true,
+                };
+                const timeline = new vis.Timeline(container, items, options);
+            </script>
+        </div>
+
+        <!-- Permissions Section -->
+        <div id="permissions" class="section">
+            <h2>Permissions</h2>
+            <p>This is the Permissions section. Here you can view project permissions.</p>
         </div>
     </div>
 
-    <script src="assets/js/main.js"></script>
+    <!-- JavaScript for Modals -->
+    <script>
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

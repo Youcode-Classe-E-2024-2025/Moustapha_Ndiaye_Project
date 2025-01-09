@@ -52,14 +52,14 @@ class ProjectModel {
             'isPublic' => $isPublic,
             'status' => $status
         ]);
-        return $stmt->rowCount() > 0; // Retourne true si la mise à jour a réussi
+        return $stmt->rowCount() > 0; 
     }
 
     public function deleteProject($idProject) {
         $sql = "DELETE FROM Project WHERE idProject = :idProject";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['idProject' => $idProject]);
-        return $stmt->rowCount() > 0; // Retourne true si la suppression a réussi
+        return $stmt->rowCount() > 0; 
     }
 }
 
@@ -71,14 +71,7 @@ class UserModel {
         $this->pdo = $pdo ;
     }
 
-    // public function getAllUsers(){
-    //     $sql = "
-    //         SELECT fullName FROM User WHERE role = 'TeamMember'
-    //     ";
-    //     $stmt = $this->pdo->prepare($sql);
-    //     $stmt->execute();
-    //     return $stmt->fetchAll(PDO :: FETCH_ASSOC);
-    // }
+
     public function getAllUsers() {
         $sql = "SELECT userId, fullName FROM User WHERE role = 'TeamMember'";
         $stmt = $this->pdo->prepare($sql);
@@ -94,32 +87,7 @@ class TaskModel {
         $this->pdo = $pdo ;
     }
 
-    // public function getAllTasks() {
-    //     $sql = "SELECT taskId, taskTitle, taskDescrip, startAt, endAt, idProject, status, assignedTo FROM Task";
-    //     $stmt = $this->pdo->prepare($sql);
-    //     $stmt->execute();
-    //     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    // }
-    // public function getAllTasks() {
-    //     $sql = "
-    //         SELECT 
-    //             Task.taskId, 
-    //             Task.taskTitle, 
-    //             Task.taskDescrip, 
-    //             Task.startAt, 
-    //             Task.endAt, 
-    //             Task.idProject, 
-    //             Task.status, 
-    //             Task.assignedTo, 
-    //             User.fullName AS assignedUserName
-    //         FROM Task
-    //         LEFT JOIN User ON Task.assignedTo = User.userId
-    //         LEFT JOIN Project ON Task.idProject = Project.idProject
-    //     ";
-    //     $stmt = $this->pdo->prepare($sql);
-    //     $stmt->execute();
-    //     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    // }
+  
     public function getAllTasks() {
         $sql = "
             SELECT 
@@ -157,7 +125,7 @@ class TaskModel {
             'status' => $status,
             'assignedTo' => $assignedTo
         ]);
-        return $this->pdo->lastInsertId(); // Retourne l'ID de la tâche ajoutée
+        return $this->pdo->lastInsertId();
     }
 
     public function updateTask($taskId, $taskTitle, $taskDescrip, $startAt, $endAt, $idProject, $status, $assignedTo) {

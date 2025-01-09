@@ -65,7 +65,7 @@ class ProjectController {
             }
         }
     }
-    
+
     public function handleDeleteProject() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteProject'])) {
             $idProject = $_POST['idProject'];
@@ -110,23 +110,6 @@ class TaskController {
         $this->ProjectModel = $ProjectModel;
     }
 
-    // public function showAllTasks(){
-    //     $tasks = $this->TaskModel->getAllTasks() ;
-    //     // var_dump($tasks);
-    //     if(empty($tasks)){
-    //         echo "<script>alert('No tasks found')</script>";
-    //     }
-    // }
-    // public function showAllTasks() {
-    //     $tasks = $this->TaskModel->getAllTasks();
-
-    //     if (empty($tasks)) {
-    //         echo "<script>alert('No tasks found')</script>";
-    //         return [];
-    //     }
-
-    //     return $tasks;
-    // }
     public function showAllTasks() {
         // Récupérer les tâches, les utilisateurs et les projets
         $tasks = $this->TaskModel->getAllTasks();

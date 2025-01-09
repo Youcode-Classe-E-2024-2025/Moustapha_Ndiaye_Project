@@ -89,3 +89,4 @@ function fillUpdateTaskForm(task) {
 function confirmDeleteTask(taskId) {
     return confirm(`Are you sure you want to delete task ${taskId}?`);
 }
+
