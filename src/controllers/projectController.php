@@ -97,3 +97,19 @@ class UserController {
         }
     }
 }
+
+class TaskController {
+    private $TaskModel;
+
+    public function __construct(TaskModel $TaskModel){
+        $this->TaskModel = $TaskModel ;
+    }
+
+    public function showAllTasks(){
+        $tasks = $this->TaskModel->getAllTasks() ;
+
+        if(empty($tasks)){
+            echo "<script>alert('No tasks found')</script>";
+        }
+    }
+}

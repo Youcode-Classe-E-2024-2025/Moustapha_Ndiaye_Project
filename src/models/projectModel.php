@@ -80,3 +80,19 @@ class UserModel {
         return $stmt->fetchAll(PDO :: FETCH_ASSOC);
     }
 }
+
+class TaskModel {
+    private $pdo ;
+
+    public function __construct($pdo){
+        $this->pdo = $pdo ;
+    }
+
+    public function getAllTasks() {
+        $sql = "SELECT taskId, taskTitle, taskDescrip, startAt, endAt, idProject, status, assignedTo FROM Task";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
+
