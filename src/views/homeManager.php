@@ -16,20 +16,21 @@ require_once('../src/controllers/projectController.php');
 $db = new Database();
 $pdo = $db->connexion();
 
-// Load database schema (if needed)
-$loader = new LoadDatabase($pdo, '../database/schemaDatabase.sql');
-$loader->fetchData();
+
 
 // Instantiate the model
 $projectModel = new ProjectModel($pdo);
+// $userModel = new UserModel($pdo);
+// $taskModel = new TaskModel($pdo);
+$taskModel = new TaskModel($pdo); // Supposons que $pdo est une instance de PDO
 $userModel = new UserModel($pdo);
-$taskModel = new TaskModel($pdo);
 
 
 // Instantiate the controller with the model
 $projectController = new ProjectController($projectModel);
 $userController = new UserController($userModel) ;
-$taskController = new TaskController($taskModel); 
+// $taskController = new TaskController($taskModel); 
+$taskController = new TaskController($taskModel, $userModel, $projectModel);
 
 
 // Handle the request
@@ -62,11 +63,28 @@ $taskController->showAllTasks();
 $tasks = $taskModel->getAllTasks();
 // var_dump($tasks);
 
+// Gérer les actions (ajout, mise à jour, suppression)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['addTask'])) {
+        $taskController->handleAddTask();
+    } elseif (isset($_POST['updateTask'])) {
+        $taskController->handleUpdateTask();
+    } elseif (isset($_POST['deleteTask'])) {
+        $taskController->handleDeleteTask();
+    }
+}
+
+// Récupérer les tâches pour affichage
+// $tasks = $taskController->showAllTasks();
+
 // Check if projects were found
 if (empty($projects || $users)) {
     echo "No found.";
     exit;
 }
+// Load database schema (if needed)
+$loader = new LoadDatabase($pdo, '../database/schemaDatabase.sql');
+$loader->fetchData();
 ?>
 
 <!DOCTYPE html>
@@ -231,62 +249,11 @@ if (empty($projects || $users)) {
             </div>
         </div>
 
-  <!-- Tasks Section -->
-  <div id="tasks" class="section">
-        <h2 class="text-2xl font-bold mb-4">Tasks</h2>
-
-        <div class="max-w-4xl mx-auto">
-            <!-- Button to Open the Add Task Modal -->
-            <button onclick="openModal('addTaskModal')" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mb-8">
-                Add Task
-            </button>
-
-            <!-- Add Task Modal -->
-            <div id="addTaskModal" class="modal">
-                <div class="modal-content">
-                    <h2 class="text-2xl font-bold mb-4">New Task</h2>
-                    <form action="homeManager" method="POST" class="space-y-4">
-                        <div>
-                            <label for="taskTitle" class="block text-sm font-medium text-gray-700">Task Title:</label>
-                            <input type="text" id="taskTitle" name="taskTitle" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="taskDescrip" class="block text-sm font-medium text-gray-700">Description:</label>
-                            <textarea id="taskDescrip" name="taskDescrip" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"></textarea>
-                        </div>
-                        <div>
-                            <label for="startAt" class="block text-sm font-medium text-gray-700">Start Date:</label>
-                            <input type="date" id="startAt" name="startAt" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="endAt" class="block text-sm font-medium text-gray-700">End Date:</label>
-                            <input type="date" id="endAt" name="endAt" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="idProject" class="block text-sm font-medium text-gray-700">Project ID:</label>
-                            <input type="number" id="idProject" name="idProject" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700">Status:</label>
-                            <select id="status" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                                <option value="Pending">Pending</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="assignedTo" class="block text-sm font-medium text-gray-700">Assigned To:</label>
-                            <input type="text" id="assignedTo" name="assignedTo" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <button type="submit" name="addTask" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add Task</button>
-                        <button type="button" onclick="closeModal('addTaskModal')" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Task List -->
-            <div class="task-list">
-                <?php if (!empty($tasks)) : ?>
+                            <!-- Afficher les tâches dans la vue -->
+        <div id="tasks" class="section">
+            <h2 class="text-2xl font-bold mb-4">Tasks</h2>
+            <?php if (!empty($tasks)) : ?>
+                <div class="task-list">
                     <?php foreach ($tasks as $task) : ?>
                         <div class="task-card bg-white p-6 rounded-lg shadow-md mb-6">
                             <h2 class="text-xl font-bold mb-2"><?= htmlspecialchars($task['taskTitle'] ?? 'No title') ?></h2>
@@ -295,7 +262,10 @@ if (empty($projects || $users)) {
                             <p class="text-gray-700 mb-2"><strong>End Date:</strong> <?= htmlspecialchars($task['endAt'] ?? 'No end date') ?></p>
                             <p class="text-gray-700 mb-2"><strong>Project ID:</strong> <?= htmlspecialchars($task['idProject'] ?? 'No project') ?></p>
                             <p class="text-gray-700 mb-2"><strong>Status:</strong> <?= htmlspecialchars($task['status'] ?? 'No status') ?></p>
-                            <p class="text-gray-700 mb-4"><strong>Assigned To:</strong> <?= htmlspecialchars($task['assignedTo'] ?? 'No assignee') ?></p>
+                            <p class="text-gray-700 mb-4">
+                                <strong>Assigned To:</strong>
+                                <?= htmlspecialchars($task['assignedUserName'] ?? 'Not assigned') ?>
+                            </p>
 
                             <!-- Edit and Delete Buttons -->
                             <div class="flex space-x-4">
@@ -311,56 +281,62 @@ if (empty($projects || $users)) {
                             </div>
                         </div>
                     <?php endforeach; ?>
-                <?php else : ?>
-                    <p class="text-gray-600">No tasks found.</p>
-                <?php endif; ?>
-            </div>
-
-            <!-- Update Task Modal -->
-            <div id="updateTaskModal" class="modal">
-                <div class="modal-content">
-                    <h3 class="text-lg font-bold mb-4">Edit Task</h3>
-                    <form action="homeManager" method="POST" class="space-y-4">
-                        <input type="hidden" id="updateTaskId" name="taskId">
-                        <div>
-                            <label for="updateTaskTitle" class="block text-sm font-medium text-gray-700">Task Title:</label>
-                            <input type="text" id="updateTaskTitle" name="taskTitle" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="updateTaskDescrip" class="block text-sm font-medium text-gray-700">Description:</label>
-                            <textarea id="updateTaskDescrip" name="taskDescrip" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"></textarea>
-                        </div>
-                        <div>
-                            <label for="updateStartAt" class="block text-sm font-medium text-gray-700">Start Date:</label>
-                            <input type="date" id="updateStartAt" name="startAt" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="updateEndAt" class="block text-sm font-medium text-gray-700">End Date:</label>
-                            <input type="date" id="updateEndAt" name="endAt" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="updateIdProject" class="block text-sm font-medium text-gray-700">Project ID:</label>
-                            <input type="number" id="updateIdProject" name="idProject" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <div>
-                            <label for="updateStatus" class="block text-sm font-medium text-gray-700">Status:</label>
-                            <select id="updateStatus" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                                <option value="Pending">Pending</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="updateAssignedTo" class="block text-sm font-medium text-gray-700">Assigned To:</label>
-                            <input type="text" id="updateAssignedTo" name="assignedTo" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                        <button type="submit" name="updateTask" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Update Task</button>
-                        <button type="button" onclick="closeModal('updateTaskModal')" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
-                    </form>
                 </div>
+            <?php else : ?>
+                <p class="text-gray-600">No tasks found.</p>
+            <?php endif; ?>
+        </div>
+
+        <!-- Update Task Modal -->
+        <div id="updateTaskModal" class="modal">
+            <div class="modal-content">
+                <h3 class="text-lg font-bold mb-4">Edit Task</h3>
+                <form action="homeManager" method="POST" class="space-y-4">
+                    <input type="hidden" id="updateTaskId" name="taskId">
+                    <div>
+                        <label for="updateTaskTitle" class="block text-sm font-medium text-gray-700">Task Title:</label>
+                        <input type="text" id="updateTaskTitle" name="taskTitle" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="updateTaskDescrip" class="block text-sm font-medium text-gray-700">Description:</label>
+                        <textarea id="updateTaskDescrip" name="taskDescrip" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"></textarea>
+                    </div>
+                    <div>
+                        <label for="updateStartAt" class="block text-sm font-medium text-gray-700">Start Date:</label>
+                        <input type="date" id="updateStartAt" name="startAt" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="updateEndAt" class="block text-sm font-medium text-gray-700">End Date:</label>
+                        <input type="date" id="updateEndAt" name="endAt" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="updateIdProject" class="block text-sm font-medium text-gray-700">Project ID:</label>
+                        <input type="number" id="updateIdProject" name="idProject" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="updateStatus" class="block text-sm font-medium text-gray-700">Status:</label>
+                        <select id="updateStatus" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="updateAssignedTo" class="block text-sm font-medium text-gray-700">Assigned To:</label>
+                        <select id="updateAssignedTo" name="assignedTo" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            <option value="">Select a user</option>
+                            <?php foreach ($users as $user) : ?>
+                                <option value="<?= htmlspecialchars($user['userId']) ?>">
+                                    <?= htmlspecialchars($user['userId'] . ' : ' . $user['fullName']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit" name="updateTask" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Update Task</button>
+                    <button type="button" onclick="closeModal('updateTaskModal')" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
+                </form>
             </div>
         </div>
-    </div>
         <!-- Statistics Section -->
         <div id="statistics" class="section">
             <h2>Statistics</h2>

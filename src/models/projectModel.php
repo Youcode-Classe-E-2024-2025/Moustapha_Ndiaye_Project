@@ -71,13 +71,19 @@ class UserModel {
         $this->pdo = $pdo ;
     }
 
-    public function getAllUsers(){
-        $sql = "
-            SELECT fullName FROM User WHERE role = 'TeamMember'
-        ";
+    // public function getAllUsers(){
+    //     $sql = "
+    //         SELECT fullName FROM User WHERE role = 'TeamMember'
+    //     ";
+    //     $stmt = $this->pdo->prepare($sql);
+    //     $stmt->execute();
+    //     return $stmt->fetchAll(PDO :: FETCH_ASSOC);
+    // }
+    public function getAllUsers() {
+        $sql = "SELECT userId, fullName FROM User WHERE role = 'TeamMember'";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
-        return $stmt->fetchAll(PDO :: FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 
@@ -88,11 +94,106 @@ class TaskModel {
         $this->pdo = $pdo ;
     }
 
+    // public function getAllTasks() {
+    //     $sql = "SELECT taskId, taskTitle, taskDescrip, startAt, endAt, idProject, status, assignedTo FROM Task";
+    //     $stmt = $this->pdo->prepare($sql);
+    //     $stmt->execute();
+    //     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // }
     public function getAllTasks() {
-        $sql = "SELECT taskId, taskTitle, taskDescrip, startAt, endAt, idProject, status, assignedTo FROM Task";
+        $sql = "
+            SELECT 
+                Task.taskId, 
+                Task.taskTitle, 
+                Task.taskDescrip, 
+                Task.startAt, 
+                Task.endAt, 
+                Task.idProject, 
+                Task.status, 
+                Task.assignedTo, 
+                User.fullName AS assignedUserName
+            FROM Task
+            LEFT JOIN User ON Task.assignedTo = User.userId
+            LEFT JOIN Project ON Task.idProject = Project.idProject
+        ";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function addTask($taskTitle, $taskDescrip, $startAt, $endAt, $idProject, $status, $assignedTo) {
+        $sql = "
+            INSERT INTO Task (taskTitle, taskDescrip, startAt, endAt, idProject, status, assignedTo)
+            VALUES (:taskTitle, :taskDescrip, :startAt, :endAt, :idProject, :status, :assignedTo)
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'taskTitle' => $taskTitle,
+            'taskDescrip' => $taskDescrip,
+            'startAt' => $startAt,
+            'endAt' => $endAt,
+            'idProject' => $idProject,
+            'status' => $status,
+            'assignedTo' => $assignedTo
+        ]);
+        return $this->pdo->lastInsertId(); // Retourne l'ID de la tâche ajoutée
+    }
+
+    public function updateTask($taskId, $taskTitle, $taskDescrip, $startAt, $endAt, $idProject, $status, $assignedTo) {
+        // Validation des entrées
+        if (!is_numeric($taskId)) {
+            throw new InvalidArgumentException("taskId doit être un entier valide.");
+        }
+    
+        if ($idProject !== null && !is_numeric($idProject)) {
+            error_log("Valeur invalide pour idProject : " . print_r($idProject, true));
+            throw new InvalidArgumentException("idProject doit être un entier valide ou null.");
+        }
+    
+        if ($assignedTo !== null && !is_numeric($assignedTo)) {
+            error_log("Valeur invalide pour assignedTo : " . print_r($assignedTo, true));
+            throw new InvalidArgumentException("assignedTo doit être un entier valide ou null.");
+        }
+    
+        // Construction de la requête SQL
+        $sql = "
+            UPDATE Task
+            SET taskTitle = :taskTitle,
+                taskDescrip = :taskDescrip,
+                startAt = :startAt,
+                endAt = :endAt,
+                idProject = :idProject,
+                status = :status,
+                assignedTo = :assignedTo
+            WHERE taskId = :taskId
+        ";
+    
+        // Préparation et exécution de la requête
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                'taskId' => (int)$taskId,
+                'taskTitle' => $taskTitle,
+                'taskDescrip' => $taskDescrip,
+                'startAt' => $startAt, // Assurez-vous que c'est au format DATETIME valide
+                'endAt' => $endAt,     // Assurez-vous que c'est au format DATETIME valide
+                'idProject' => $idProject !== null ? (int)$idProject : null,
+                'status' => $status,
+                'assignedTo' => $assignedTo !== null ? (int)$assignedTo : null
+            ]);
+            return $stmt->rowCount(); // Retourne le nombre de lignes affectées
+        } catch (PDOException $e) {
+            // Journalisation de l'erreur
+            error_log("Erreur lors de la mise à jour de la tâche : " . $e->getMessage());
+            throw $e; // Relancer l'exception pour une gestion ultérieure
+        }
+    }
+
+    public function deleteTask($taskId) {
+        $sql = "DELETE FROM Task WHERE taskId = :taskId";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['taskId' => $taskId]);
+        return $stmt->rowCount(); // Retourne le nombre de lignes affectées
     }
 }
 
