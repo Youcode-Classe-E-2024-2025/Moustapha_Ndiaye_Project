@@ -100,6 +100,26 @@ class TaskModel {
     //     $stmt->execute();
     //     return $stmt->fetchAll(PDO::FETCH_ASSOC);
     // }
+    // public function getAllTasks() {
+    //     $sql = "
+    //         SELECT 
+    //             Task.taskId, 
+    //             Task.taskTitle, 
+    //             Task.taskDescrip, 
+    //             Task.startAt, 
+    //             Task.endAt, 
+    //             Task.idProject, 
+    //             Task.status, 
+    //             Task.assignedTo, 
+    //             User.fullName AS assignedUserName
+    //         FROM Task
+    //         LEFT JOIN User ON Task.assignedTo = User.userId
+    //         LEFT JOIN Project ON Task.idProject = Project.idProject
+    //     ";
+    //     $stmt = $this->pdo->prepare($sql);
+    //     $stmt->execute();
+    //     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // }
     public function getAllTasks() {
         $sql = "
             SELECT 
@@ -111,10 +131,11 @@ class TaskModel {
                 Task.idProject, 
                 Task.status, 
                 Task.assignedTo, 
-                User.fullName AS assignedUserName
+                User.fullName AS assignedUserName,
+                Project.projectTitle AS projectTitle  
             FROM Task
             LEFT JOIN User ON Task.assignedTo = User.userId
-            LEFT JOIN Project ON Task.idProject = Project.idProject
+            LEFT JOIN Project ON Task.idProject = Project.idProject  
         ";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
@@ -155,6 +176,11 @@ class TaskModel {
             throw new InvalidArgumentException("assignedTo doit être un entier valide ou null.");
         }
     
+        // Validation des dates
+        if (!strtotime($startAt) || !strtotime($endAt)) {
+            throw new InvalidArgumentException("Les dates de début et de fin doivent être au format valide (YYYY-MM-DD).");
+        }
+    
         // Construction de la requête SQL
         $sql = "
             UPDATE Task
@@ -175,8 +201,8 @@ class TaskModel {
                 'taskId' => (int)$taskId,
                 'taskTitle' => $taskTitle,
                 'taskDescrip' => $taskDescrip,
-                'startAt' => $startAt, // Assurez-vous que c'est au format DATETIME valide
-                'endAt' => $endAt,     // Assurez-vous que c'est au format DATETIME valide
+                'startAt' => $startAt,
+                'endAt' => $endAt,
                 'idProject' => $idProject !== null ? (int)$idProject : null,
                 'status' => $status,
                 'assignedTo' => $assignedTo !== null ? (int)$assignedTo : null

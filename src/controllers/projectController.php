@@ -128,17 +128,19 @@ class TaskController {
     //     return $tasks;
     // }
     public function showAllTasks() {
+        // Récupérer les tâches, les utilisateurs et les projets
         $tasks = $this->TaskModel->getAllTasks();
         $users = $this->UserModel->getAllUsers();
         $projects = $this->ProjectModel->getAllProjects();
-
-
+    
+        // Vérifier si des tâches ont été trouvées
         if (empty($tasks)) {
             echo "<script>alert('No tasks found')</script>";
-            return ['tasks' => [], 'users' => $users];
+            return ['tasks' => [], 'users' => $users, 'projects' => $projects];
         }
-
-        return ['tasks' => $tasks, 'users' => $users];
+    
+        // Retourner les données
+        return ['tasks' => $tasks, 'users' => $users, 'projects' => $projects];
     }
 
     public function handleAddTask() {
@@ -205,7 +207,7 @@ class TaskController {
     
                 // Validation des dates
                 if (!strtotime($startAt) || !strtotime($endAt)) {
-                    throw new InvalidArgumentException("Les dates de début et de fin doivent être au format valide (YYYY-MM-DD HH:MM:SS).");
+                    throw new InvalidArgumentException("Les dates de début et de fin doivent être au format valide (YYYY-MM-DD).");
                 }
     
                 // Mettre à jour la tâche via le modèle
@@ -227,6 +229,7 @@ class TaskController {
             }
         }
     }
+    
     public function handleDeleteTask() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteTask'])) {
             $taskId = $_POST['taskId'];
