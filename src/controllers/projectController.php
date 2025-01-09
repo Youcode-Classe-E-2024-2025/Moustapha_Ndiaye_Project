@@ -20,6 +20,13 @@ class ProjectController {
         } 
     }
 
+    public function showPublicProjects() {
+        $publicProjects = $this->projectModel->getPublicProjects();
+        if (empty($publicProjects)) {
+            echo "No projects found.";
+        } 
+    }
+
     
 
 

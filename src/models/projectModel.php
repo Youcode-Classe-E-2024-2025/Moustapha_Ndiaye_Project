@@ -15,6 +15,13 @@ class ProjectModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getPublicProjects() {
+        $sql = "SELECT idProject, projectTitle, projectDescrip, isPublic, status FROM Project WHERE isPublic = 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function addProject($projectTitle, $projectDescrip, $category, $startAt, $endAt, $isPublic, $status) {
         $sql = "INSERT INTO Project (projectTitle, projectDescrip, category, startAt, endAt, isPublic, status)
                 VALUES (:projectTitle, :projectDescrip, :category, :startAt, :endAt, :isPublic, :status)";

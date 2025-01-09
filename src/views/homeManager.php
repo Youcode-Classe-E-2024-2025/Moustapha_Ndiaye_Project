@@ -1,6 +1,4 @@
 <?php
-// homeManager
-
 // Enable error reporting for debugging
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/error.log');
@@ -106,8 +104,6 @@ foreach ($tasks as $task) {
 }
 $taskStatusJson = json_encode($taskStatusCount);
 
-// Include the view
-// include 'views/homeManager.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -118,7 +114,6 @@ $taskStatusJson = json_encode($taskStatusCount);
     <link rel="stylesheet" href="assets/css/output.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis-timeline-graph2d.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis-timeline-graph2d.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Project Manager</title>
 </head>
