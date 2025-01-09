@@ -65,7 +65,7 @@ class ProjectController {
             }
         }
     }
-
+    
     public function handleDeleteProject() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteProject'])) {
             $idProject = $_POST['idProject'];
