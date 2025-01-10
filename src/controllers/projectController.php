@@ -54,7 +54,6 @@ class ProjectController {
             $isPublic = $_POST['isPublic'];
             $status = $_POST['status'];
     
-            // Ajouter le projet
             $success = $this->projectModel->addProject($projectTitle, $projectDescrip, $category, $startAt, $endAt, $isPublic, $status);
     
             if ($success) {
@@ -76,7 +75,6 @@ class ProjectController {
             $isPublic = $_POST['isPublic'];
             $status = $_POST['status'];
     
-            // Mettre à jour le projet
             $success = $this->projectModel->updateProject($idProject, $projectTitle, $projectDescrip, $category, $startAt, $endAt, $isPublic, $status);
     
             if ($success) {
@@ -91,7 +89,6 @@ class ProjectController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteProject'])) {
             $idProject = $_POST['idProject'];
     
-            // Supprimer le projet
             $success = $this->projectModel->deleteProject($idProject);
     
             if ($success) {
@@ -157,13 +154,11 @@ class TaskController {
             $status = $_POST['status'];
             $assignedTo = $_POST['assignedTo'];
     
-            // Valider les données (vous pouvez ajouter des validations supplémentaires ici)
             if (empty($taskTitle) || empty($taskDescrip) || empty($startAt) || empty($endAt) || empty($idProject) || empty($status) || empty($assignedTo)) {
                 echo "<script>alert('All fields are required.')</script>";
                 return;
             }
     
-            // Ajouter la tâche via le modèle
             $taskId = $this->TaskModel->addTask($taskTitle, $taskDescrip, $startAt, $endAt, $idProject, $status, $assignedTo);
     
             if ($taskId) {
@@ -177,7 +172,6 @@ class TaskController {
     public function handleUpdateTask() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['updateTask'])) {
             try {
-                // Récupération des données du formulaire
                 $taskId = $_POST['taskId'] ?? null;
                 $taskTitle = htmlspecialchars($_POST['taskTitle'] ?? '');
                 $taskDescrip = htmlspecialchars($_POST['taskDescrip'] ?? '');
@@ -187,16 +181,14 @@ class TaskController {
                 $status = htmlspecialchars($_POST['status'] ?? '');
                 $assignedTo = $_POST['assignedTo'] ?? null;
     
-                // Validation de idProject
                 if ($idProject === '') {
-                    $idProject = null; // Convertir une chaîne vide en null
+                    $idProject = null; 
                 } elseif ($idProject !== null && !is_numeric($idProject)) {
                     throw new InvalidArgumentException("idProject doit être un entier valide ou null.");
                 } else {
-                    $idProject = (int)$idProject; // Convertir en entier
+                    $idProject = (int)$idProject; 
                 }
     
-                // Validation des autres champs
                 if (empty($taskId) || empty($taskTitle) || empty($taskDescrip) || empty($startAt) || empty($endAt) || empty($status)) {
                     throw new InvalidArgumentException("Tous les champs obligatoires doivent être remplis.");
                 }
@@ -209,12 +201,10 @@ class TaskController {
                     throw new InvalidArgumentException("assignedTo doit être un entier valide ou null.");
                 }
     
-                // Validation des dates
                 if (!strtotime($startAt) || !strtotime($endAt)) {
                     throw new InvalidArgumentException("Les dates de début et de fin doivent être au format valide (YYYY-MM-DD).");
                 }
     
-                // Mettre à jour la tâche via le modèle
                 $rowsAffected = $this->TaskModel->updateTask($taskId, $taskTitle, $taskDescrip, $startAt, $endAt, $idProject, $status, $assignedTo);
     
                 if ($rowsAffected > 0) {
@@ -223,11 +213,9 @@ class TaskController {
                     throw new Exception("Aucune tâche n'a été mise à jour.");
                 }
             } catch (InvalidArgumentException $e) {
-                // Gestion des erreurs de validation
                 error_log("Erreur de validation : " . $e->getMessage());
                 echo "<script>alert('Erreur : " . addslashes($e->getMessage()) . "')</script>";
             } catch (Exception $e) {
-                // Gestion des autres erreurs
                 error_log("Erreur lors de la mise à jour de la tâche : " . $e->getMessage());
                 echo "<script>alert('Erreur : " . addslashes($e->getMessage()) . "')</script>";
             }
@@ -238,13 +226,11 @@ class TaskController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteTask'])) {
             $taskId = $_POST['taskId'];
     
-            // Valider l'ID de la tâche
             if (empty($taskId)) {
                 echo "<script>alert('Task ID is required.')</script>";
                 return;
             }
     
-            // Supprimer la tâche via le modèle
             $rowsAffected = $this->TaskModel->deleteTask($taskId);
     
             if ($rowsAffected > 0) {

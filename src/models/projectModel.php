@@ -60,7 +60,6 @@ class ProjectModel {
 
     public function getUserTaskDetails($userId = null) {
         try {
-            // Requête SQL de base
             $sql = "
                 SELECT 
                     u.userId, 
@@ -84,7 +83,6 @@ class ProjectModel {
                     Project p ON t.idProject = p.idProject  -- Jointure avec la table Project
             ";
     
-            // Ajouter une clause WHERE si un userId est spécifié
             if ($userId !== null) {
                 if (!is_numeric($userId)) {
                     throw new InvalidArgumentException("L'ID utilisateur doit être un nombre.");
@@ -92,7 +90,6 @@ class ProjectModel {
                 $sql .= " WHERE u.userId = :userId";
             }
     
-            // Préparer et exécuter la requête
             $stmt = $this->pdo->prepare($sql);
     
             if ($userId !== null) {
@@ -101,11 +98,10 @@ class ProjectModel {
                 $stmt->execute();
             }
     
-            // Retourner les résultats
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Erreur dans getUserTaskDetails : " . $e->getMessage());
-            return []; // Retourne un tableau vide en cas d'erreur
+            return []; 
         }
     }
 
@@ -223,7 +219,6 @@ class TaskModel {
     }
 
     public function updateTask($taskId, $taskTitle, $taskDescrip, $startAt, $endAt, $idProject, $status, $assignedTo) {
-        // Validation des entrées
         if (!is_numeric($taskId)) {
             throw new InvalidArgumentException("taskId doit être un entier valide.");
         }
@@ -243,7 +238,6 @@ class TaskModel {
             throw new InvalidArgumentException("Les dates de début et de fin doivent être au format valide (YYYY-MM-DD).");
         }
     
-        // Construction de la requête SQL
         $sql = "
             UPDATE Task
             SET taskTitle = :taskTitle,
@@ -256,7 +250,6 @@ class TaskModel {
             WHERE taskId = :taskId
         ";
     
-        // Préparation et exécution de la requête
         try {
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([
@@ -269,11 +262,10 @@ class TaskModel {
                 'status' => $status,
                 'assignedTo' => $assignedTo !== null ? (int)$assignedTo : null
             ]);
-            return $stmt->rowCount(); // Retourne le nombre de lignes affectées
+            return $stmt->rowCount(); 
         } catch (PDOException $e) {
-            // Journalisation de l'erreur
             error_log("Erreur lors de la mise à jour de la tâche : " . $e->getMessage());
-            throw $e; // Relancer l'exception pour une gestion ultérieure
+            throw $e; 
         }
     }
 
@@ -281,7 +273,7 @@ class TaskModel {
         $sql = "DELETE FROM Task WHERE taskId = :taskId";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['taskId' => $taskId]);
-        return $stmt->rowCount(); // Retourne le nombre de lignes affectées
+        return $stmt->rowCount();
     }
 }
 

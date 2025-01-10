@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
       // Initialisation de l'état du label
       checkInput();
 
-      // Ajout des écouteurs d'événements
       input.addEventListener("input", checkInput);
       input.addEventListener("blur", checkInput);
     });
@@ -27,14 +26,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'block'; // Affiche le modal
+        modal.style.display = 'block'; 
     }
 }
 
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'none'; // Cache le modal
+        modal.style.display = 'none'; 
     }
 }
 
@@ -67,7 +66,6 @@ function confirmDelete(projectId) {
 });
 
 
-   // Fonctions pour gérer les modales
    function openModal(modalId) {
     document.getElementById(modalId).style.display = 'block';
 }
@@ -76,7 +74,6 @@ function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
 }
 
-// Remplir le formulaire de mise à jour avec les données de la tâche
 function fillUpdateTaskForm(task) {
     document.getElementById('updateTaskId').value = task.taskId;
     document.getElementById('updateTaskTitle').value = task.taskTitle;
@@ -88,7 +85,6 @@ function fillUpdateTaskForm(task) {
     document.getElementById('updateAssignedTo').value = task.assignedTo;
 }
 
-// Confirmer la suppression d'une tâche
 function confirmDeleteTask(taskId) {
     return confirm(`Are you sure you want to delete task ${taskId}?`);
 }

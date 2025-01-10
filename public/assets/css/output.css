@@ -727,6 +727,16 @@ video {
   transform-origin: 0 0;
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 .list-inside {
   list-style-position: inside;
 }
@@ -819,9 +829,22 @@ video {
   border-width: 0px;
 }
 
+.border-4 {
+  border-width: 4px;
+}
+
 .border-gray-300 {
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
+}
+
+.border-blue-500 {
+  --tw-border-opacity: 1;
+  border-color: rgb(59 130 246 / var(--tw-border-opacity, 1));
+}
+
+.border-t-transparent {
+  border-top-color: transparent;
 }
 
 .bg-blue-500 {
@@ -1043,6 +1066,21 @@ video {
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
+.text-gray-500 {
+  --tw-text-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+
+.text-green-500 {
+  --tw-text-opacity: 1;
+  color: rgb(34 197 94 / var(--tw-text-opacity, 1));
+}
+
+.text-red-500 {
+  --tw-text-opacity: 1;
+  color: rgb(239 68 68 / var(--tw-text-opacity, 1));
+}
+
 .placeholder-transparent::-moz-placeholder {
   color: transparent;
 }
@@ -1116,13 +1154,11 @@ video {
 .label-top {
   transform: translateY(-1.15rem) scale(0.8);
   color: #000;
-  /* Couleur lorsque le label est en haut */
 }
 
 .label-default {
   transform: translateY(0) scale(1);
   color: #6b7280;
-  /* Couleur par défaut du label */
 }
 
 label {
@@ -1131,7 +1167,6 @@ label {
 
 .update-form {
   display: none;
-  /* Hide the update form by default */
 }
 
 /* Styles for project cards */
@@ -1150,39 +1185,29 @@ label {
 
 .modal {
   display: none;
-  /* Caché par défaut */
   position: fixed;
-  /* Reste en place */
   z-index: 1000;
-  /* Au-dessus des autres éléments */
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
   overflow: auto;
-  /* Permet le défilement si nécessaire */
   background-color: rgba(0, 0, 0, 0.5);
-  /* Fond semi-transparent */
 }
 
 .modal-content {
   background-color: white;
   margin: 10% auto;
-  /* Centré verticalement */
   padding: 20px;
   border: 1px solid #888;
   width: 80%;
-  /* Largeur du modal */
   max-width: 600px;
-  /* Largeur maximale */
   border-radius: 8px;
 }
 
 .hidden {
   display: none;
 }
-
-/* Styles for the transparent sidebar */
 
 .sidebar {
   position: fixed;
@@ -1191,10 +1216,8 @@ label {
   height: 100vh;
   width: 250px;
   background-color: rgba(255, 255, 255, 0.8);
-  /* Transparent white */
   -webkit-backdrop-filter: blur(10px);
           backdrop-filter: blur(10px);
-  /* Blur effect */
   padding: 20px;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
