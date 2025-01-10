@@ -1,4 +1,5 @@
 <?php
+class UserRegistrationException extends Exception {}
 
 class User {
     private $userId;
@@ -7,7 +8,7 @@ class User {
     private $passWord;
     private $role;
 
-    public function __construct($fullName = '', $email = '', $passWord = '', $role = 'Visitor'){
+    public function __construct($fullName = '', $email = '', $passWord = '', $role = 'Visitor') {
         $this->fullName = $fullName;
         $this->email = $email;
         $this->passWord = $passWord;
@@ -20,45 +21,49 @@ class User {
     public function getEmail() { return $this->email; }
     public function getRole() { return $this->role; }
 
-    // Register a new user
-    public function registerUser($pdo){
+    public function isEmailUnique($pdo) {
+        $statement = $pdo->prepare("SELECT COUNT(*) FROM User WHERE email = ?");
+        $statement->execute([$this->email]);
+        return $statement->fetchColumn() === 0; 
+    }
+
+    public function registerUser($pdo) {
         try {
-            // Hachage du mot de passe
+            if (!$this->isEmailUnique($pdo)) {
+                throw new UserRegistrationException("Email is already registered.");
+            }
+
             $hashed_passWord = password_hash($this->passWord, PASSWORD_BCRYPT);
-        
-            // Préparation de la requête SQL
+
             $statement = $pdo->prepare("INSERT INTO User (fullName, email, passWord, role) VALUES (?, ?, ?, ?)");
-            
-            // Exécution de la requête avec les bons paramètres
+
             $statement->execute([
-                $this->fullName,    // fullName
-                $this->email,       // email
-                $hashed_passWord,   // mot de passe haché
-                $this->role         // rôle
+                $this->fullName,    
+                $this->email,       
+                $hashed_passWord,   
+                $this->role        
             ]);
-            
-            // Récupération de l'ID de l'utilisateur nouvellement inséré
+
             $this->userId = $pdo->lastInsertId();
         } catch (PDOException $e) {
-            // Gérer l'exception en cas d'erreur
-            echo "Erreur d'inscription : " . $e->getMessage();
+            error_log("Registration error: " . $e->getMessage());
+            throw new UserRegistrationException("Registration failed. Please try again later.");
         }
     }
-    
+
     // Login user
-    public static function loginUsers($pdo, $email, $passWord){
+    public static function loginUsers($pdo, $email, $passWord) {
         try {
             $stmnt = $pdo->prepare("SELECT * FROM User WHERE email = ?");
             $stmnt->execute([$email]);
             $user = $stmnt->fetch(PDO::FETCH_ASSOC);
 
-            // Vérification du mot de passe
-            if ($user && password_verify($passWord, $user['passWord'])){
+            if ($user && password_verify($passWord, $user['passWord'])) {
                 return new User($user['fullName'], $user['email'], '', $user['role']);
             }
         } catch (PDOException $e) {
-            // Gérer l'exception en cas d'erreur
-            echo "Erreur de connexion : " . $e->getMessage();
+            error_log("Login error: " . $e->getMessage());
+            throw new UserRegistrationException("Login failed. Please try again later.");
         }
         return null;
     }
