@@ -22,6 +22,42 @@ class ProjectModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getUserProjectDetails($userId = null) {
+        $sql = "
+            SELECT 
+                u.userId, 
+                u.fullName AS userFullName, 
+                p.idProject, 
+                p.projectTitle,
+                p.projectDescrip,
+                p.category,
+                p.startAt,
+                p.endAt,
+                p.isPublic,
+                p.status
+            FROM 
+                UserProject up
+            JOIN 
+                User u ON up.userId = u.userId
+            JOIN 
+                Project p ON up.idProject = p.idProject
+        ";
+
+        if ($userId !== null) {
+            $sql .= " WHERE u.userId = :userId";
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+
+        if ($userId !== null) {
+            $stmt->execute(['userId' => $userId]);
+        } else {
+            $stmt->execute();
+        }
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function addProject($projectTitle, $projectDescrip, $category, $startAt, $endAt, $isPublic, $status) {
         $sql = "INSERT INTO Project (projectTitle, projectDescrip, category, startAt, endAt, isPublic, status)
                 VALUES (:projectTitle, :projectDescrip, :category, :startAt, :endAt, :isPublic, :status)";

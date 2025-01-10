@@ -27,6 +27,13 @@ class ProjectController {
         } 
     }
 
+    public function getUserProjectDetail(){
+        $getUserProjectDetails = $this->getUserProjectDetails();
+        if (empty($getUserProjectDetails)) {
+            echo "No projects or users found.";
+        } 
+    }
+
     
 
 

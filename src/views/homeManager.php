@@ -122,10 +122,10 @@ $taskStatusJson = json_encode($taskStatusCount);
     <div class="sidebar">
         <ul>
             <li><a href="#projects">Projects</a></li>
+            <li><a href="#timeline">Timeline</a></li>
             <li><a href="#users">Users</a></li>
             <li><a href="#tasks">Tasks</a></li>
             <li><a href="#statistics">Statistics</a></li>
-            <li><a href="#timeline">Timeline</a></li>
             <li><a href="#permissions">Permissions</a></li>
         </ul>
     </div>
@@ -135,7 +135,7 @@ $taskStatusJson = json_encode($taskStatusCount);
 
     <!-- Projects Section -->
     <div id="projects" class="section">
-        <h2 class="text-2xl font-bold mb-6">Projects</h2>
+        <h2 class="">Projects</h2>
         <div class="max-w-4xl mx-auto">
             <!-- Button to Open the Add Project Modal -->
             <button onclick="openModal('addProjectModal')" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mb-8">
@@ -251,7 +251,11 @@ $taskStatusJson = json_encode($taskStatusCount);
                         </div>
                         <div>
                             <label for="updateStatus" class="block text-sm font-medium text-gray-700">Status:</label>
-                            <input type="text" id="updateStatus" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            <select id="updateStatus" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                <option value="Todo" <?= ($task['status'] ?? '') === 'Todo' ? 'selected' : '' ?>>Todo</option>
+                                <option value="In Progress" <?= ($task['status'] ?? '') === 'In Progress' ? 'selected' : '' ?>>In Progress</option>
+                                <option value="Done" <?= ($task['status'] ?? '') === 'Done' ? 'selected' : '' ?>>Done</option>
+                            </select>
                         </div>
                         <button type="submit" name="updateProject" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Update Project</button>
                         <button type="button" onclick="closeModal('updateProjectModal')" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
@@ -263,7 +267,7 @@ $taskStatusJson = json_encode($taskStatusCount);
 
     <!-- Timeline Section -->
     <div id="timeline" class="section">
-        <h2 class="text-2xl font-bold mb-6">Project Timeline</h2>
+        <h2 class="">Project Timeline</h2>
         <div id="visualization" style="width: 100%; height: 400px;"></div>
     </div>
 
@@ -291,7 +295,7 @@ $taskStatusJson = json_encode($taskStatusCount);
             orientation: 'top',   
         };
 
-        // Créer la timeline
+        // Create timeline
         const container = document.getElementById('visualization');
         const timeline = new vis.Timeline(container, items, options);
     </script>
@@ -463,9 +467,9 @@ $taskStatusJson = json_encode($taskStatusCount);
                         <div>
                             <label for="updateStatus" class="block text-sm font-medium text-gray-700">Status:</label>
                             <select id="updateStatus" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                                <option value="Pending" <?= ($task['status'] ?? '') === 'Pending' ? 'selected' : '' ?>>Pending</option>
+                                <option value="Todo" <?= ($task['status'] ?? '') === 'Todo' ? 'selected' : '' ?>>Todo</option>
                                 <option value="In Progress" <?= ($task['status'] ?? '') === 'In Progress' ? 'selected' : '' ?>>In Progress</option>
-                                <option value="Completed" <?= ($task['status'] ?? '') === 'Completed' ? 'selected' : '' ?>>Completed</option>
+                                <option value="Done" <?= ($task['status'] ?? '') === 'Done' ? 'selected' : '' ?>>Done</option>
                             </select>
                         </div>
                         
