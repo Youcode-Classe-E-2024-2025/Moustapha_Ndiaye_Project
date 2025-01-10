@@ -58,6 +58,57 @@ class ProjectModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getUserTaskDetails($userId = null) {
+        try {
+            // Requête SQL de base
+            $sql = "
+                SELECT 
+                    u.userId, 
+                    u.fullName AS userFullName, 
+                    t.taskId, 
+                    t.taskTitle,
+                    t.taskDescrip,
+                    t.startAt,
+                    t.endAt,
+                    t.idProject,
+                    p.projectTitle,  
+                    t.status,
+                    ut.createdAt AS taskAssignmentDate
+                FROM 
+                    UserTask ut
+                JOIN 
+                    User u ON ut.userId = u.userId
+                JOIN 
+                    Task t ON ut.taskId = t.taskId
+                JOIN 
+                    Project p ON t.idProject = p.idProject  -- Jointure avec la table Project
+            ";
+    
+            // Ajouter une clause WHERE si un userId est spécifié
+            if ($userId !== null) {
+                if (!is_numeric($userId)) {
+                    throw new InvalidArgumentException("L'ID utilisateur doit être un nombre.");
+                }
+                $sql .= " WHERE u.userId = :userId";
+            }
+    
+            // Préparer et exécuter la requête
+            $stmt = $this->pdo->prepare($sql);
+    
+            if ($userId !== null) {
+                $stmt->execute(['userId' => $userId]);
+            } else {
+                $stmt->execute();
+            }
+    
+            // Retourner les résultats
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur dans getUserTaskDetails : " . $e->getMessage());
+            return []; // Retourne un tableau vide en cas d'erreur
+        }
+    }
+
     public function addProject($projectTitle, $projectDescrip, $category, $startAt, $endAt, $isPublic, $status) {
         $sql = "INSERT INTO Project (projectTitle, projectDescrip, category, startAt, endAt, isPublic, status)
                 VALUES (:projectTitle, :projectDescrip, :category, :startAt, :endAt, :isPublic, :status)";

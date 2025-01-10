@@ -34,6 +34,13 @@ class ProjectController {
         } 
     }
 
+    public function getUserTaskDetail(){
+        $getUserTaskDetails = $this->getUserTaskDetails();
+        if (empty($getUserTaskDetails)) {
+            echo "No task or users found.";
+        } 
+    }
+
     
 
 

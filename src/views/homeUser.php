@@ -54,12 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Fetch data
 $projectsUsers = $projectModel->getUserProjectDetails();
-
-// Check if data is empty
-if (empty($projectsUsers) && empty($users)) {
-    echo "No projects or users found.";
-    exit;
-}
+$UserTask = $projectModel->getUserTaskDetails();
+// var_dump($UserTask);
 
 // Load database schema (if needed)
 $loader = new LoadDatabase($pdo, '../database/schemaDatabase.sql');
@@ -115,9 +111,9 @@ $loader->fetchData();
             <div class="max-w-4xl mx-auto">
 
                 <!-- Task List -->
-                <?php if (!empty($tasks)) : ?>
+                <?php if (!empty($UserTask)) : ?>
                     <div class="task-list flex flex-wrap gap-3">
-                        <?php foreach ($tasks as $task) : ?>
+                        <?php foreach ($UserTask as $task) : ?>
                             <div class="task-card bg-white p-6 rounded-lg shadow-md mb-6">
                                 <h2 class="text-xl font-bold mb-2"><?= htmlspecialchars($task['taskTitle'] ?? 'No title') ?></h2>
                                 <p class="text-gray-700 mb-2"><strong>Description: </strong><?= htmlspecialchars($task['taskDescrip'] ?? 'No description') ?></p>
@@ -125,11 +121,6 @@ $loader->fetchData();
                                 <p class="text-gray-700 mb-2"><strong>End Date:</strong> <?= htmlspecialchars($task['endAt'] ?? 'No end date') ?></p>
                                 <p class="text-gray-700 mb-2"><strong>Project:</strong> <?= htmlspecialchars($task['projectTitle'] ?? 'No project') ?></p>
                                 <p class="text-gray-700 mb-2"><strong>Status:</strong> <?= htmlspecialchars($task['status'] ?? 'No status') ?></p>
-                                <p class="text-gray-700 mb-4">
-                                    <strong>Assigned To:</strong>
-                                    <?= htmlspecialchars($task['assignedUserName'] ?? 'Not assigned') ?>
-                                </p>
-
                                 <!-- Edit  -->
                                 <div class="flex space-x-4">
                                     <button onclick="fillUpdateTaskForm(<?= htmlspecialchars(json_encode($task)) ?>); openModal('updateTaskModal')" class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600">
@@ -140,7 +131,7 @@ $loader->fetchData();
                         <?php endforeach; ?>
                     </div>
                 <?php else : ?>
-                    <p class="text-gray-600">No tasks found.</p>
+                    <p class="text-gray-600">No tasks found!.</p>
                 <?php endif; ?>
             </div>
         </div>                                                      
