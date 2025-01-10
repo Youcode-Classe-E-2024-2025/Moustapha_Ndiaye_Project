@@ -1,7 +1,7 @@
 <?php
 // Enable error reporting for debugging
 ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/error.log');
+ini_set('error_log', __DIR__ . '/../logs/error.log');
 error_reporting(E_ALL);
 ini_set('display_errors', 1); 
 
@@ -175,9 +175,13 @@ $taskStatusJson = json_encode($taskStatusCount);
                             </select>
                         </div>
                         <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700">Status:</label>
-                            <input type="text" id="status" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
+                                <label for="status" class="block text-sm font-medium text-gray-700">Status:</label>
+                                <select id="status" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                    <option value="Todo">Todo</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Done">Done</option>
+                                </select>
+                            </div>
                         <button type="submit" name="addProject" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add Project</button>
                         <button type="button" onclick="closeModal('addProjectModal')" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
                     </form>
@@ -264,7 +268,7 @@ $taskStatusJson = json_encode($taskStatusCount);
     </div>
 
     <script>
-        // Données pour la timeline
+        // Datatimeline
         const timelineData = [
             <?php foreach ($projects as $project): ?>
                 {
@@ -276,15 +280,15 @@ $taskStatusJson = json_encode($taskStatusCount);
             <?php endforeach; ?>
         ];
 
-        // Convertir les données pour Vis.js
+        // Convert
         const items = new vis.DataSet(timelineData);
 
-        // Options de la timeline
+        // Options  timeline
         const options = {
-            showCurrentTime: true, // Afficher l'heure actuelle
-            zoomable: true,       // Permettre le zoom
-            moveable: true,       // Permettre le déplacement
-            orientation: 'top',   // Orientation des labels
+            showCurrentTime: true, 
+            zoomable: true,      
+            moveable: true,       
+            orientation: 'top',   
         };
 
         // Créer la timeline
@@ -416,7 +420,72 @@ $taskStatusJson = json_encode($taskStatusCount);
                     <p class="text-gray-600">No tasks found.</p>
                 <?php endif; ?>
             </div>
-        </div>
+        </div>                                                      
+        <!-- Update Task Modal -->
+            <div id="updateTaskModal" class="modal">
+                <div class="modal-content">
+                    <h3 class="text-lg font-bold mb-4">Edit Task</h3>
+                    <form action="homeManager" method="POST" class="space-y-4">
+                        <input type="hidden" id="updateTaskId" name="taskId" value="<?= htmlspecialchars($task['taskId'] ?? '') ?>">
+                        
+                        <div>
+                            <label for="updateTaskTitle" class="block text-sm font-medium text-gray-700">Task Title:</label>
+                            <input type="text" id="updateTaskTitle" name="taskTitle" value="<?= htmlspecialchars($task['taskTitle'] ?? '') ?>" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="updateTaskDescrip" class="block text-sm font-medium text-gray-700">Description:</label>
+                            <textarea id="updateTaskDescrip" name="taskDescrip" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"><?= htmlspecialchars($task['taskDescrip'] ?? '') ?></textarea>
+                        </div>
+                        
+                        <div>
+                            <label for="updateStartAt" class="block text-sm font-medium text-gray-700">Start Date:</label>
+                            <input type="date" id="updateStartAt" name="startAt" value="<?= htmlspecialchars($task['startAt'] ?? '') ?>" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="updateEndAt" class="block text-sm font-medium text-gray-700">End Date:</label>
+                            <input type="date" id="updateEndAt" name="endAt" value="<?= htmlspecialchars($task['endAt'] ?? '') ?>" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="updateIdProject" class="block text-sm font-medium text-gray-700">Project:</label>
+                            <select id="updateIdProject" name="idProject" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                <option value="">Select a project</option>
+                                <?php foreach ($projects as $project) : ?>
+                                    <option value="<?= htmlspecialchars($project['idProject'] ?? '') ?>" <?= ($task['idProject'] ?? '') == $project['idProject'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($project['projectTitle'] ?? '') ?>  <!-- Afficher uniquement le projectTitle -->
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="updateStatus" class="block text-sm font-medium text-gray-700">Status:</label>
+                            <select id="updateStatus" name="status" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                <option value="Pending" <?= ($task['status'] ?? '') === 'Pending' ? 'selected' : '' ?>>Pending</option>
+                                <option value="In Progress" <?= ($task['status'] ?? '') === 'In Progress' ? 'selected' : '' ?>>In Progress</option>
+                                <option value="Completed" <?= ($task['status'] ?? '') === 'Completed' ? 'selected' : '' ?>>Completed</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="updateAssignedTo" class="block text-sm font-medium text-gray-700">Assigned To:</label>
+                            <select id="updateAssignedTo" name="assignedTo" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                <option value="">Select a user</option>
+                                <?php foreach ($users as $user) : ?>
+                                    <option value="<?= htmlspecialchars($user['userId'] ?? '') ?>" <?= ($task['assignedTo'] ?? '') == $user['userId'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($user['fullName'] ?? '') ?>  <!-- Afficher uniquement le fullName -->
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" name="updateTask" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Update Task</button>
+                        <button type="button" onclick="closeModal('updateTaskModal')" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Cancel</button>
+                    </form>
+                </div>
+            </div>
 
         <!-- Statistics Section -->
         <div id="statistics" class="section">
@@ -464,21 +533,6 @@ $taskStatusJson = json_encode($taskStatusCount);
         </div>
     </div>
 
-    <!-- JavaScript for Modals -->
-    <script>
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.style.display = 'block';
-            }
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-    </script>
+    <script src="assets/js/main.js"></script>
 </body>
 </html>

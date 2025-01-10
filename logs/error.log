@@ -1,0 +1,14 @@
+[10-Jan-2025 09:34:08 UTC] PHP Warning:  require_once(../src/models/taskModel.php): Failed to open stream: No such file or directory in /var/www/html/Moustapha_Ndiaye_Project/src/views/homeManager.php on line 12
+[10-Jan-2025 09:34:08 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '../src/models/taskModel.php' (include_path='.:/usr/share/php') in /var/www/html/Moustapha_Ndiaye_Project/src/views/homeManager.php:12
+Stack trace:
+#0 /var/www/html/Moustapha_Ndiaye_Project/public/index.php(7): require_once()
+#1 /var/www/html/Moustapha_Ndiaye_Project/public/index.php(33): safeRequire()
+#2 {main}
+  thrown in /var/www/html/Moustapha_Ndiaye_Project/src/views/homeManager.php on line 12
+[10-Jan-2025 09:50:48 UTC] PHP Warning:  require_once(../src/models/taskModel.php): Failed to open stream: No such file or directory in /var/www/html/Moustapha_Ndiaye_Project/src/views/homeManager.php on line 12
+[10-Jan-2025 09:50:48 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '../src/models/taskModel.php' (include_path='.:/usr/share/php') in /var/www/html/Moustapha_Ndiaye_Project/src/views/homeManager.php:12
+Stack trace:
+#0 /var/www/html/Moustapha_Ndiaye_Project/public/index.php(7): require_once()
+#1 /var/www/html/Moustapha_Ndiaye_Project/public/index.php(33): safeRequire()
+#2 {main}
+  thrown in /var/www/html/Moustapha_Ndiaye_Project/src/views/homeManager.php on line 12

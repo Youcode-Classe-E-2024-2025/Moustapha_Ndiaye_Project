@@ -24,27 +24,30 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
-// Functions to handle modals
-function openModal(modalId) {
-    document.getElementById(modalId).style.display = 'block';
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'block'; // Affiche le modal
+    }
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none'; // Cache le modal
+    }
 }
 
-// Fill the update form with project data
 function fillUpdateForm(project) {
-    document.getElementById('updateProjectTitle').value = project.projectTitle;
-    document.getElementById('updateProjectDescrip').value = project.projectDescrip;
-    document.getElementById('updateCategory').value = project.category;
-    document.getElementById('updateStartAt').value = project.startAt;
-    document.getElementById('updateEndAt').value = project.endAt;
-    document.getElementById('updateIsPublic').value = project.isPublic;
-    document.getElementById('updateStatus').value = project.status;
-    document.getElementById('updateProjectId').value = project.idProject;
+  document.getElementById('updateidProject').value = project.idProject;
+  document.getElementById('updateProjectTitle').value = project.projectTitle;
+  document.getElementById('updateProjectDescrip').value = project.projectDescrip;
+  document.getElementById('updateCategory').value = project.category;
+  document.getElementById('updateStartAt').value = project.startAt;
+  document.getElementById('updateEndAt').value = project.endAt;
+  document.getElementById('updateIsPublic').value = project.isPublic ? '1' : '0';
+  document.getElementById('updateStatus').value = project.status;
 }
-
 // Confirm project deletion
 function confirmDelete(projectId) {
     return confirm(`Are you sure you want to delete project ${projectId}?`);
@@ -55,10 +58,10 @@ function confirmDelete(projectId) {
  document.querySelectorAll('.sidebar a').forEach(link => {
   link.addEventListener('click', function (e) {
       e.preventDefault(); // Prevent default anchor behavior
-      const targetId = this.getAttribute('href').substring(1); // Get the target section ID
-      const targetSection = document.getElementById(targetId); // Find the target section
+      const targetId = this.getAttribute('href').substring(1); 
+      const targetSection = document.getElementById(targetId); 
       if (targetSection) {
-          targetSection.scrollIntoView({ behavior: 'smooth' }); // Smooth scroll to the section
+          targetSection.scrollIntoView({ behavior: 'smooth' }); 
       }
   });
 });
@@ -90,3 +93,10 @@ function confirmDeleteTask(taskId) {
     return confirm(`Are you sure you want to delete task ${taskId}?`);
 }
 
+document.querySelectorAll('.edit-button').forEach(button => {
+  button.addEventListener('click', () => {
+      const project = JSON.parse(button.getAttribute('data-project'));
+      fillUpdateForm(project);
+      openModal('updateProjectModal');
+  });
+});
